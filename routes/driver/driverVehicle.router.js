@@ -1,5 +1,5 @@
 import express from "express";
-import Driver from "../models/Driver.js";
+import Driver from "../../models/driver.model.js";
 
 const router = express.Router();
 
@@ -36,7 +36,8 @@ router.post("/:userId", async (req, res) => {
             return res.status(404).json({ message: "Driver not found" });
         }
 
-        if (driver.vehicle && Object.keys(driver.vehicle.toObject()).length > 0) {
+        // Check if vehicle has meaningful data (not just default 'type' field)
+        if (driver.vehicle && (driver.vehicle.brand || driver.vehicle.model || driver.vehicle.licensePlate)) {
             return res.status(400).json({ message: "Vehicle already exists" });
         }
 

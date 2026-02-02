@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const DriverSchema = new mongoose.Schema(
     {
-    
+
         userId: {
             type: String,
             required: true,
@@ -10,11 +10,15 @@ const DriverSchema = new mongoose.Schema(
             index: true,
         },
 
-    
+        profileImage: {
+            type: String,
+            default: "",
+        },
+
+
         vehicle: {
             type: {
                 type: String,
-                default: "Car",
             },
 
             brand: {
@@ -48,7 +52,7 @@ const DriverSchema = new mongoose.Schema(
             ],
         },
 
-    
+
         documents: {
             drivingLicense: {
                 type: String,
@@ -61,7 +65,7 @@ const DriverSchema = new mongoose.Schema(
             },
         },
 
-    
+
         rating: {
             average: {
                 type: Number,
@@ -75,7 +79,7 @@ const DriverSchema = new mongoose.Schema(
             },
         },
 
-    
+
         rides: {
             hosted: {
                 type: Number,
@@ -101,7 +105,7 @@ const DriverSchema = new mongoose.Schema(
             default: 0,
         },
 
-    
+
         earnings: {
             total: {
                 type: Number,
@@ -109,7 +113,7 @@ const DriverSchema = new mongoose.Schema(
             },
         },
 
-    
+
         verification: {
             emailVerified: {
                 type: Boolean,
@@ -139,7 +143,7 @@ const DriverSchema = new mongoose.Schema(
             default: false,
         },
 
-    
+
         lastRideHostedAt: {
             type: Date,
         },
