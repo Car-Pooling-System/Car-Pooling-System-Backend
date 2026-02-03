@@ -12,6 +12,7 @@ import driverStatsRouter from "./routes/driver/driverStats.router.js"
 import driverVehicleRouter from "./routes/driver/driverVehicle.router.js"
 import driverVerificationRouter from "./routes/driver/driverVerification.router.js"
 import driverProfileRouter from "./routes/driver/driverProfile.router.js"
+import phoneVerificationRouter from "./routes/phoneVerification.router.js"
 
 dotenv.config()
 connectDB();
@@ -33,6 +34,7 @@ app.use('/api/driver-register', driverRegisterRouter);
 app.use('/api/driver-stats', driverStatsRouter);
 app.use('/api/driver-vehicle', driverVehicleRouter);
 app.use('/api/driver-verification', driverVerificationRouter);
+app.use('/api/phone-verification', phoneVerificationRouter);
 
 app.listen(PORT, () => {
     console.log(`server is running on http://0.0.0.0:${PORT}`);

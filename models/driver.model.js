@@ -15,6 +15,10 @@ const DriverSchema = new mongoose.Schema(
             default: "",
         },
 
+        phoneNumber: {
+            type: String,
+            default: "",
+        },
 
         vehicle: {
             type: {
