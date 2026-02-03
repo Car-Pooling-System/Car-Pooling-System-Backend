@@ -22,7 +22,7 @@ export function decodePolyline(encoded) {
         } while (b >= 0x20);
         lng += (result & 1) ? ~(result >> 1) : result >> 1;
 
-        points.push([lng / 1e5, lat / 1e5]);
+        points.push([lng / 100000.0, lat / 100000.0]);
     }
     return points;
 }

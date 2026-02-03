@@ -122,7 +122,7 @@ router.get("/", async (req, res) => {
                 preferences: ride.preferences,
                 estimate: {
                     distanceKm: segmentKm,
-                    fare: fare || ride.pricing.baseFare, // Fallback to base fare if segment fare is 0
+                    fare: fare || ride.pricing.baseFare,
                 },
             });
         }
