@@ -13,6 +13,7 @@ import driverVehicleRouter from "./routes/driver/driverVehicle.router.js"
 import driverVerificationRouter from "./routes/driver/driverVerification.router.js"
 import driverProfileRouter from "./routes/driver/driverProfile.router.js"
 import phoneVerificationRouter from "./routes/phoneVerification.router.js"
+import driverRidesRouter from "./routes/driver/driverRides.router.js";
 
 import rideRouter from "./routes/rides/index.js";
 
@@ -37,6 +38,7 @@ app.use('/api/driver-stats', driverStatsRouter);
 app.use('/api/driver-vehicle', driverVehicleRouter);
 app.use('/api/driver-verification', driverVerificationRouter);
 app.use('/api/phone-verification', phoneVerificationRouter);
+app.use("/api/driver-rides", driverRidesRouter);
 
 app.use("/api/rides", rideRouter);
 
