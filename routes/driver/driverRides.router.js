@@ -26,4 +26,26 @@ router.get("/:driverUserId", async (req, res) => {
     }
 });
 
+/**
+ * DELETE /api/driver-rides/:rideId
+ * Delete a ride by ID
+ */
+router.delete("/:rideId", async (req, res) => {
+    try {
+        const { rideId } = req.params;
+        console.log("DELETING RIDE:", rideId);
+
+        const deletedRide = await Ride.findByIdAndDelete(rideId);
+
+        if (!deletedRide) {
+            return res.status(404).json({ message: "Ride not found" });
+        }
+
+        res.json({ message: "Ride deleted successfully" });
+    } catch (err) {
+        console.error("DELETE RIDE ERROR:", err);
+        res.status(500).json({ message: "Failed to delete ride" });
+    }
+});
+
 export default router;
