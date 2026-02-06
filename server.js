@@ -12,10 +12,9 @@ import driverStatsRouter from "./routes/driver/driverStats.router.js"
 import driverVehicleRouter from "./routes/driver/driverVehicle.router.js"
 import driverVerificationRouter from "./routes/driver/driverVerification.router.js"
 import driverProfileRouter from "./routes/driver/driverProfile.router.js"
-import phoneVerificationRouter from "./routes/phoneVerification.router.js"
-import driverRidesRouter from "./routes/driver/driverRides.router.js";
 
-import rideRouter from "./routes/rides/index.js";
+// Emission Route
+import emissionRouter from './routes/carbon.router.js';
 
 dotenv.config()
 connectDB();
@@ -37,11 +36,43 @@ app.use('/api/driver-register', driverRegisterRouter);
 app.use('/api/driver-stats', driverStatsRouter);
 app.use('/api/driver-vehicle', driverVehicleRouter);
 app.use('/api/driver-verification', driverVerificationRouter);
-app.use('/api/phone-verification', phoneVerificationRouter);
-app.use("/api/driver-rides", driverRidesRouter);
 
-app.use("/api/rides", rideRouter);
+// Emission Route
+app.use('/api/get-emission', emissionRouter);
+
 
 app.listen(PORT, () => {
     console.log(`server is running on http://0.0.0.0:${PORT}`);
 })
+
+// Remove after adding
+/*
+import Emission from './models/carbonEmission.model.js';
+
+const seedData = async () => {
+    try {
+      const data = [
+        { type: "hatchback petrol", emissionFactor: 117 }, 
+        { type: "premium hatchback petrol", emissionFactor: 150 }, 
+        { type: "hatchback diesel", emissionFactor: 105 }, 
+        { type: "premium hatchback diesel", emissionFactor: 136 }, 
+        { type: "sedan petrol", emissionFactor: 150 }, 
+        { type: "premium sedan petrol", emissionFactor: 210 }, 
+        { type: "sedan diesel", emissionFactor: 132 }, 
+        { type: "premium sedan diesel", emissionFactor: 170 }, 
+        { type: "suv diesel", emissionFactor: 196 }, 
+        { type: "premium suv diesel", emissionFactor: 220 }, 
+        { type: "muv diesel", emissionFactor: 174 }, 
+        { type: "hybrid petrol", emissionFactor: 95 }, 
+        { type: "electric", emissionFactor: 0 }
+      ];
+  
+      const result = await Emission.insertMany(data);
+      console.log("Data inserted");
+    } catch (err) {
+      console.error(err);
+    }
+};
+
+seedData();
+*/
