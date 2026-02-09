@@ -16,7 +16,7 @@ const RiderSchema = new mongoose.Schema(
             },
         ],
 
-        rating:{
+        rating: {
             average: {
                 type: Number,
                 default: 0,
@@ -29,6 +29,32 @@ const RiderSchema = new mongoose.Schema(
                 default: 0,
             },
         },
+        bookings: [
+            {
+                rideId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Ride",
+                    index: true,
+                },
+
+                pickupGrid: String,
+                dropGrid: String,
+
+                farePaid: Number,
+
+                status: {
+                    type: String,
+                    enum: ["confirmed", "cancelled"],
+                    default: "confirmed",
+                },
+
+                bookedAt: {
+                    type: Date,
+                    default: Date.now,
+                },
+            },
+        ],
+
 
         rides: {
             completed: {
@@ -77,7 +103,7 @@ const RiderSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        
+
         lastRideAt: {
             type: Date,
         },

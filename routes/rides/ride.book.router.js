@@ -1,5 +1,6 @@
 import express from "express";
 import Ride from "../../models/ride.model.js";
+import Rider from "../../models/user.model.js";
 import { decodePolyline } from "../../utils/polyline.utils.js";
 import { latLngToGrid } from "../../utils/geo.utils.js";
 import { findClosestPointIndex } from "../../utils/route.utils.js";
@@ -16,6 +17,14 @@ router.post("/:rideId/book", async (req, res) => {
 
         if (ride.seats.available <= 0)
             return res.status(400).json({ message: "No seats available" });
+
+        // Check if user already booked this ride
+        const alreadyBooked = ride.passengers.some(
+            (p) => p.userId === user.userId && p.status === "confirmed"
+        );
+        if (alreadyBooked) {
+            return res.status(400).json({ message: "You have already booked this ride" });
+        }
 
         // 🔥 DECODE POLYLINE
         const path = decodePolyline(ride.route.encodedPolyline);
@@ -44,6 +53,25 @@ router.post("/:rideId/book", async (req, res) => {
 
         ride.seats.available -= 1;
         await ride.save();
+        const riderUpdate = await Rider.findOneAndUpdate(
+            { userId: user.userId },
+            {
+                $push: {
+                    bookings: {
+                        rideId: ride._id,
+                        pickupGrid: latLngToGrid(pickup.lat, pickup.lng),
+                        dropGrid: latLngToGrid(drop.lat, drop.lng),
+                        farePaid,
+                        status: "confirmed",
+                    },
+                },
+                $set: { lastRideAt: new Date() },
+            },
+            { upsert: true, new: true }
+        );
+
+        console.log("Rider booking updated for:", user.userId, !!riderUpdate);
+
 
         res.json({ message: "Ride booked", farePaid });
     } catch (err) {

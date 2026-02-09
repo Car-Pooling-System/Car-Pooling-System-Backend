@@ -1,5 +1,6 @@
 import express from "express";
 import Ride from "../../models/ride.model.js";
+import Driver from "../../models/driver.model.js";
 
 const router = express.Router();
 
@@ -54,6 +55,14 @@ router.post("/", async (req, res) => {
             metrics,
             status: "scheduled",
         });
+
+        await Driver.updateOne(
+            { userId: driver.userId },
+            {
+                $inc: { "rides.hosted": 1 },
+                $set: { lastRideHostedAt: new Date() },
+            }
+        );
 
         res.status(201).json(ride);
     } catch (err) {
