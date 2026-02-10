@@ -10,6 +10,10 @@ import driverRouter from "./routes/driver/index.js";
 import rideRouter from "./routes/rides/index.js";
 import riderRouter from "./routes/rider/index.js";
 
+import emissionRouter from './routes/carbon.router.js';
+
+import seedData from './models/addEmission.js';
+
 dotenv.config()
 connectDB();
 
@@ -21,6 +25,8 @@ app.use(cors({
     credentials: true,
 }));
 
+seedData();
+
 
 app.use('/health', healthRouter);
 app.use('/api/phone-verification', phoneVerificationRouter);
@@ -28,6 +34,8 @@ app.use('/api/phone-verification', phoneVerificationRouter);
 app.use('/api', driverRouter);
 app.use("/api/rides", rideRouter);
 app.use("/api/rider", riderRouter);
+
+app.use("/get-emission", emissionRouter);
 
 app.listen(PORT, () => {
     console.log(`server is running on http://0.0.0.0:${PORT}`);
