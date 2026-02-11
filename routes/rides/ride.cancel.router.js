@@ -21,13 +21,38 @@ router.post("/:rideId/cancel", async (req, res) => {
             return res.status(404).json({ message: "Ride not found" });
         }
 
-        // Find the passenger in the ride
+        // 1. Check if the user is the DRIVER
+        if (ride.driver.userId === userId) {
+            ride.status = "cancelled";
+
+            // Loop through all confirmed passengers to cancel them
+            const cancelledPassengers = [];
+            for (const passenger of ride.passengers) {
+                if (passenger.status === "confirmed") {
+                    passenger.status = "cancelled";
+                    cancelledPassengers.push(passenger.userId);
+                }
+            }
+
+            await ride.save();
+
+            // Update all passengers' booking status in parallel
+            await Rider.updateMany(
+                { userId: { $in: cancelledPassengers }, "bookings.rideId": ride._id },
+                { $set: { "bookings.$.status": "cancelled" } }
+            );
+
+            console.log("Ride cancelled by driver:", userId, "Ride ID:", ride._id);
+            return res.json({ message: "Ride cancelled successfully. Passengers notified." });
+        }
+
+        // 2. If not driver, proceed as PASSENGER cancellation
         const passengerIndex = ride.passengers.findIndex(
             (p) => p.userId === userId && p.status === "confirmed"
         );
 
         if (passengerIndex === -1) {
-            return res.status(404).json({ message: "Booking not found" });
+            return res.status(404).json({ message: "Booking not found or already cancelled" });
         }
 
         // Mark passenger as cancelled

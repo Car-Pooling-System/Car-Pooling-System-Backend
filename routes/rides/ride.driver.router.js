@@ -86,4 +86,37 @@ router.post("/:rideId/cancel", async (req, res) => {
     }
 });
 
+/* ---------------- UPDATE PREFERENCES ---------------- */
+router.put("/:rideId/preferences", async (req, res) => {
+    try {
+        const { driverUserId, preferences } = req.body;
+        const { rideId } = req.params;
+
+        const ride = await Ride.findById(rideId);
+        if (!ride) return res.status(404).json({ message: "Ride not found" });
+
+        if (ride.driver.userId !== driverUserId) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+
+        const confirmedPassengersCount = ride.passengers.filter(p => p.status === "confirmed").length;
+        if (confirmedPassengersCount > 0) {
+            return res.status(400).json({ message: "Cannot update preferences after passengers have booked." });
+        }
+
+        if (preferences) {
+            ride.preferences = {
+                ...ride.preferences,
+                ...preferences
+            };
+        }
+
+        await ride.save();
+        res.json({ message: "Preferences updated successfully", preferences: ride.preferences });
+    } catch (err) {
+        console.error("UPDATE PREFERENCES ERROR:", err);
+        res.status(500).json({ message: "Failed to update preferences" });
+    }
+});
+
 export default router;

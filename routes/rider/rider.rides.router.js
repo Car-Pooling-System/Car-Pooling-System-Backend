@@ -15,7 +15,6 @@ router.get("/:userId", async (req, res) => {
         const rider = await Rider.findOne({ userId: req.params.userId })
             .populate({
                 path: "bookings.rideId",
-                match: { status: "scheduled" },
             });
 
         if (!rider) {
@@ -26,7 +25,7 @@ router.get("/:userId", async (req, res) => {
         const upcoming = rider.bookings
             .filter((b) => {
                 if (!b.rideId) {
-                    console.log("Skipping booking due to missing/non-scheduled ride:", b._id);
+                    console.log("Skipping booking due to missing ride:", b._id);
                     return false;
                 }
                 return true;
