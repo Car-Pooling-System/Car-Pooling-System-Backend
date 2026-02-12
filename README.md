@@ -1,8 +1,8 @@
-# 🚗 Car Pooling System - Backend
+# Car Pooling System - Backend
 
 A robust and scalable Node.js backend for a ride-sharing application that connects drivers and riders efficiently using geospatial search, real-time ride management, and secure payment integration.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Features](#features)
 - [Technology Stack](#technology-stack)
@@ -18,7 +18,7 @@ A robust and scalable Node.js backend for a ride-sharing application that connec
 
 ---
 
-## ✨ Features
+## Features
 
 ### Core Functionality
 - **Driver Management**: Registration, profile management, document verification
@@ -34,7 +34,7 @@ A robust and scalable Node.js backend for a ride-sharing application that connec
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Component | Technology |
 |-----------|-----------|
@@ -50,7 +50,7 @@ A robust and scalable Node.js backend for a ride-sharing application that connec
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Car-Pooling-System-Backend/
@@ -108,7 +108,7 @@ Car-Pooling-System-Backend/
 
 ---
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 - **Node.js** (v16 or higher)
@@ -191,7 +191,7 @@ GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 
 ---
 
-## 📊 Database Models
+## Database Models
 
 ### 1. **Driver Model**
 ```javascript
@@ -272,7 +272,7 @@ GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Health Check
 | Method | Endpoint | Description |
@@ -316,7 +316,7 @@ GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 
 ---
 
-## 🎯 Key Features in Detail
+## Key Features in Detail
 
 ### 1. **Geospatial Grid Search**
 - Uses grid-based indexing (configurable grid size: 0.05° ≈ 5km)
@@ -356,7 +356,7 @@ Total Fare = Base Fare + (Distance × Price Per Km)
 
 ---
 
-## 📈 Running the Server
+## Running the Server
 
 ### Development Mode
 ```bash
@@ -378,7 +378,7 @@ pm2 logs carpooling-backend
 
 ---
 
-## 🔍 Testing the API
+## Testing the API
 
 ### Using Postman or cURL
 
@@ -408,7 +408,7 @@ curl -X POST http://localhost:3000/api/rides \
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please follow these steps:
 
@@ -427,20 +427,13 @@ We welcome contributions! Please follow these steps:
 
 ---
 
-## 📝 License
-
-This project is licensed under the **ISC License** - see the LICENSE file for details.
-
-
----
-
 ## Support
 
 For issues, questions, or suggestions, please open an issue on GitHub or contact the development team.
 
 ---
 
-## 🔐 Security Notes
+## Security Notes
 
 1. **Never** commit `.env` files with sensitive data
 2. Always validate and sanitize user inputs
