@@ -10,7 +10,6 @@ router.get('/', async (req, res) => {
         const Car = await Emission.findOne({ type: type });
         const emissionFactor = Car.emissionFactor;
 
-        const maxD = Math.max(...distances);
         const summationD = distances.reduce((acc, current) => acc + current, 0);
 
         var emissionArr = [];
