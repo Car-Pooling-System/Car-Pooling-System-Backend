@@ -20,41 +20,50 @@ const DriverSchema = new mongoose.Schema(
             default: "",
         },
 
-        vehicle: {
-            type: {
-                type: String,
-            },
-
-            brand: {
-                type: String,
-                trim: true,
-            },
-
-            model: {
-                type: String,
-                trim: true,
-            },
-
-            year: {
-                type: Number,
-            },
-
-            color: {
-                type: String,
-                trim: true,
-            },
-
-            licensePlate: {
-                type: String,
-                trim: true,
-            },
-
-            images: [
-                {
+        vehicles: [
+            {
+                brand: {
                     type: String,
+                    trim: true,
+                    required: true,
                 },
-            ],
-        },
+
+                model: {
+                    type: String,
+                    trim: true,
+                    required: true,
+                },
+
+                year: {
+                    type: String,
+                    trim: true,
+                    required: true,
+                },
+
+                color: {
+                    type: String,
+                    trim: true,
+                    required: true,
+                },
+
+                licensePlate: {
+                    type: String,
+                    trim: true,
+                    required: true,
+                },
+
+                images: [
+                    {
+                        type: String,
+                    },
+                ],
+
+                createdAt: {
+                    type: Date,
+                    default: Date.now,
+                },
+            },
+        ],
 
 
         documents: {
