@@ -38,10 +38,18 @@ router.post("/:userId", async (req, res) => {
             });
         }
 
-        const driver = await Driver.findOne({ userId });
-
+        // Upsert: create driver record if it doesn't exist yet
+        let driver = await Driver.findOne({ userId });
         if (!driver) {
-            return res.status(404).json({ message: "Driver not found" });
+            driver = await Driver.create({
+                userId,
+                verification: {
+                    emailVerified: false,
+                    phoneVerified: false,
+                    drivingLicenseVerified: false,
+                    vehicleVerified: false,
+                },
+            });
         }
 
         // Initialize vehicles array if it doesn't exist
