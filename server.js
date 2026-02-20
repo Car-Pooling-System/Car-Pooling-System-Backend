@@ -13,6 +13,10 @@ import emissionRouter from './routes/carbon.router.js';
 
 import paymentRouter from "./routes/payment/payment.router.js";
 
+import http from "http";
+import { initSocket } from "./socket/rideChat.socket.js";
+import chatRouter from "./routes/chat.router.js";
+
 dotenv.config()
 connectDB();
 
@@ -36,6 +40,10 @@ app.use('/get-emission', emissionRouter);
 
 app.use('/api/payment', paymentRouter);
 
-app.listen(PORT, () => {
-    console.log(`server is running on http://0.0.0.0:${PORT}`);
+app.use("/api/chat", chatRouter);
+
+const server = http.createServer(app);
+initSocket(server);
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });
