@@ -7,6 +7,23 @@ const router = express.Router();
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:5001';
 
 /**
+ * @route   GET /api/ml/predict-demand
+ * @desc    Instructional route for the prediction endpoint
+ */
+router.get('/predict-demand', (req, res) => {
+    res.status(200).json({
+        message: "This is a prediction endpoint. Please use POST to get a prediction.",
+        example_payload: {
+            origin: "Chennai",
+            destination: "Bangalore",
+            day_of_week: "Friday",
+            hour: 18,
+            weather: "sunny"
+        }
+    });
+});
+
+/**
  * @route   POST /api/ml/predict-demand
  * @desc    Get demand prediction from ML service
  */
