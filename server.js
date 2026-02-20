@@ -27,6 +27,8 @@ app.use(cors({
 }));
 
 app.use('/health', healthRouter);
+app.use('/api/ml', mlRouter); // Moved up for priority
+console.log('✅ ML Proxy Router Registered at /api/ml');
 app.use('/api/phone-verification', phoneVerificationRouter);
 
 app.use('/api', driverRouter);
@@ -36,7 +38,6 @@ app.use('/api/rider', riderRouter);
 app.use('/get-emission', emissionRouter);
 
 app.use('/api/payment', paymentRouter);
-app.use('/api/ml', mlRouter);
 
 app.listen(PORT, () => {
     console.log(`server is running on http://0.0.0.0:${PORT}`);
