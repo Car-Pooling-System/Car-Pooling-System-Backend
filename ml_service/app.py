@@ -91,6 +91,19 @@ def calculate_confidence(prediction: float) -> float:
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
+@app.route("/", methods=["GET"])
+def index():
+    return jsonify({
+        "message": "Welcome to the ML Demand Prediction Service",
+        "endpoints": {
+            "health": "/health",
+            "predict": "/predict-demand (POST)",
+            "heatmap": "/demand-heatmap"
+        },
+        "status": "Running"
+    }), 200
+
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({
