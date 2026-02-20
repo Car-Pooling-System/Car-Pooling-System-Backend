@@ -1,6 +1,5 @@
 import express from "express";
 import Rider from "../../models/user.model.js";
-import Ride from "../../models/ride.model.js";
 
 const router = express.Router();
 
