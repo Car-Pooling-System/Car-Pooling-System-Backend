@@ -12,6 +12,7 @@ import riderRouter from "./routes/rider/index.js";
 import emissionRouter from './routes/carbon.router.js';
 
 import paymentRouter from "./routes/payment/payment.router.js";
+import mlRouter from "./routes/ml.router.js";
 
 dotenv.config()
 connectDB();
@@ -35,6 +36,7 @@ app.use('/api/rider', riderRouter);
 app.use('/get-emission', emissionRouter);
 
 app.use('/api/payment', paymentRouter);
+app.use('/api/ml', mlRouter);
 
 app.listen(PORT, () => {
     console.log(`server is running on http://0.0.0.0:${PORT}`);
