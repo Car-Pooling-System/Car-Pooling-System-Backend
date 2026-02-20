@@ -138,12 +138,27 @@ mongod
 # Or use MongoDB Atlas (cloud)
 ```
 
+
 ### Step 5: Run the Server
 ```bash
 node server.js
 ```
 
 The server will start on `http://localhost:3000`
+
+### Step 6: Run with Docker (Optional)
+Warning: Ensure you have Docker and Docker Compose installed.
+
+1.  **Build and Run**:
+    ```bash
+    docker-compose up --build
+    ```
+2.  **Access the App**:
+    The server will be available at `http://localhost:3000`.
+3.  **Stop Containers**:
+    ```bash
+    docker-compose down
+    ```
 
 ---
 
