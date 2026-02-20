@@ -2,6 +2,15 @@ name: Backend CI/CD
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target Environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
   push:
     branches: [main, develop]
   pull_request:
