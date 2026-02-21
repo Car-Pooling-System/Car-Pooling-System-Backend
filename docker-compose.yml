@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    # environment:
+    #   - MONGO_URI=mongodb://mongo:27017/carpooling # Removed to use .env value (Atlas)
+
+# Removed local mongo service
