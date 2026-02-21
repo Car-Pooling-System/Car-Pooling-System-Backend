@@ -5,4 +5,3 @@ export const latLngToGrid = (lat, lng, size = 0.05) => {
   const lngIdx = Math.floor(lng / size + 1e-10);
   return `${latIdx}_${lngIdx}`;
 };
-

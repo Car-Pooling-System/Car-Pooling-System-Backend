@@ -1,5 +1,5 @@
-import express from 'express';
-import Emission from '../models/carbonEmission.model.js';
+import express from "express";
+import Emission from "../models/carbonEmission.model.js";
 
 const router = express.Router();
 
@@ -44,6 +44,27 @@ router.get('/', async (req, res) => {
     } catch (err) {
         res.status(300).json({ message: "Server error", error: err.message });
     }
+    totalEmission = Number(totalEmission.toFixed(4));
+
+    var emissionCaused = Math.max(...emissionArr);
+    emissionCaused = Number(emissionCaused.toFixed(4));
+    var savedEmission = totalEmission - emissionCaused;
+    savedEmission = Number(savedEmission.toFixed(4));
+
+    res.status(200).json({
+      message:
+        "Emission per passenger if separate, Total Emission if seperate, Total Emission caused, Emission Saved, Real per capita emission in kilograms",
+      body: {
+        emissionArr,
+        totalEmission,
+        emissionCaused,
+        savedEmission,
+        realEmission,
+      },
+    });
+  } catch (err) {
+    res.status(300).json({ message: "Server error", error: err.message });
+  }
 });
 
 export default router;

@@ -80,6 +80,15 @@ router.get("/:rideId", async (req, res) => {
         console.error(err);
         res.status(500).json({ message: "Failed to fetch ride" });
     }
+
+    res.json({
+      ride,
+      estimate,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch ride" });
+  }
 });
 
 export default router;
