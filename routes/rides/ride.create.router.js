@@ -10,6 +10,7 @@ router.post("/", async (req, res) => {
 
         const {
             driver,
+            vehicle,
             route,
             schedule,
             pricing,
@@ -65,6 +66,7 @@ router.post("/", async (req, res) => {
 
         const ride = await Ride.create({
             driver,
+            vehicle: vehicle || {},
             route: {
                 start: route.start,
                 end: route.end,

@@ -24,6 +24,24 @@ router.get("/:rideId", async (req, res) => {
             license: !!v.drivingLicenseVerified,
             vehicle: !!v.vehicleVerified,
         };
+        if (driverRecord?.rating?.average > 0) {
+            rideObj.driver.rating = driverRecord.rating.average;
+            rideObj.driver.reviewsCount = driverRecord.rating.reviewsCount;
+        }
+        rideObj.driver.ridesHosted = driverRecord?.rides?.hosted || 0;
+
+        // Fallback: if ride has no vehicle data, use first vehicle from driver record
+        if (!rideObj.vehicle?.brand && driverRecord?.vehicles?.length > 0) {
+            const v = driverRecord.vehicles[0];
+            rideObj.vehicle = {
+                brand: v.brand,
+                model: v.model,
+                year: v.year,
+                color: v.color,
+                licensePlate: v.licensePlate,
+                image: v.images?.[0] || null,
+            };
+        }
 
         let estimate = null;
 
