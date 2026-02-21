@@ -1,0 +1,13 @@
+# ML Service – Python virtual environment
+venv/
+
+# Generated data and model artifacts (should be generated locally)
+ride_demand_aggregated.csv
+demand_model.pkl
+encoders.pkl
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
