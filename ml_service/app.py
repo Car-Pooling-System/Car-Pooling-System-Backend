@@ -16,14 +16,14 @@ import numpy as np
 from datetime import datetime, timedelta
 import logging
 
-# ── Setup ─────────────────────────────────────────────────────────────────────
+# -- Setup ---------------------------------------------------------------------
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
 
-# ── Load model artifacts ───────────────────────────────────────────────────────
+# -- Load model artifacts -------------------------------------------------------
 BASE_DIR      = os.path.dirname(__file__)
 MODEL_PATH    = os.path.join(BASE_DIR, "demand_model.pkl")
 ENCODERS_PATH = os.path.join(BASE_DIR, "encoders.pkl")
@@ -36,16 +36,16 @@ def load_artifacts():
     if os.path.exists(MODEL_PATH) and os.path.exists(ENCODERS_PATH):
         model    = joblib.load(MODEL_PATH)
         encoders = joblib.load(ENCODERS_PATH)
-        logger.info("✅ ML model and encoders loaded successfully.")
+        logger.info("ML model and encoders loaded successfully.")
     else:
         logger.warning(
-            "⚠️  Model files not found. "
+            "Model files not found. "
             "Run `python generate_dataset.py` then `python train_model.py` first."
         )
 
 load_artifacts()
 
-# ── Constants ─────────────────────────────────────────────────────────────────
+# -- Constants -----------------------------------------------------------------
 POPULAR_ROUTES = [
     ("Chennai",   "Bangalore"),
     ("Chennai",   "Coimbatore"),
@@ -89,7 +89,7 @@ def calculate_confidence(prediction: float) -> float:
     return round(base + boost, 2)
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# -- Routes --------------------------------------------------------------------
 
 @app.route("/", methods=["GET"])
 def index():
@@ -160,7 +160,7 @@ def predict_demand():
         return jsonify({
             "predicted_demand": predicted_demand,
             "confidence":       confidence,
-            "route":            f"{origin} → {destination}",
+            "route":            f"{origin} - {destination}",
             "time":             f"{hour:02d}:00",
             "recommendation":   recommendation,
             "inputs": {
@@ -207,7 +207,7 @@ def demand_heatmap():
                         heatmap.append({
                             "date":        target_date.strftime("%Y-%m-%d"),
                             "day":         day_name,
-                            "route":       f"{origin} → {destination}",
+                            "route":       f"{origin} - {destination}",
                             "hour":        hour,
                             "weather":     weather,
                             "demand":      pred,
@@ -230,6 +230,6 @@ def demand_heatmap():
         return jsonify({"error": str(exc)}), 500
 
 
-# ── Entry Point ───────────────────────────────────────────────────────────────
+# -- Entry Point ---------------------------------------------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=False)
