@@ -7,11 +7,13 @@ A robust and scalable Node.js backend for a ride-sharing application.
 This project is fully containerized for a seamless development experience.
 
 ### Prerequisites
+
 - **Docker Desktop** (No other dependencies like Node.js or MongoDB are required locally)
 
 ### Setup & Installation
 
 1.  **Clone the Repository**
+
     ```bash
     git clone https://github.com/nanducc/car-pooling-system-backend.git
     cd car-pooling-system-backend
@@ -29,11 +31,13 @@ This project is fully containerized for a seamless development experience.
 ### Common Commands
 
 - **Build and Run (after changes)**:
+
   ```bash
   docker compose up --build
   ```
 
 - **Stop the Containers**:
+
   ```bash
   docker compose down
   ```

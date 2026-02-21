@@ -13,7 +13,7 @@ import random
 random.seed(42)
 np.random.seed(42)
 
-# ── Config ────────────────────────────────────────────────────────────────────
+# -- Config --------------------------------------------------------------------
 ROUTES = [
     ("Chennai",   "Bangalore"),
     ("Chennai",   "Coimbatore"),
@@ -48,7 +48,7 @@ def pick_weather():
     return random.choices(WEATHER_OPTIONS, weights=[0.60, 0.25, 0.15], k=1)[0]
 
 
-# ── Generate raw requests ─────────────────────────────────────────────────────
+# -- Generate raw requests -----------------------------------------------------
 records = []
 for _ in range(TOTAL_REQUESTS):
     origin, destination = random.choice(ROUTES)
@@ -82,20 +82,20 @@ for _ in range(TOTAL_REQUESTS):
 
 df = pd.DataFrame(records)
 
-# ── Apply Friday/Saturday 1.5× boost by duplicating rows ─────────────────────
+# -- Apply Friday/Saturday 1.5x boost by duplicating rows ---------------------
 weekend_mask = df["day_of_week"].isin(["Friday", "Saturday"])
 extra = df[weekend_mask].sample(frac=0.50, random_state=42)
 df = pd.concat([df, extra], ignore_index=True)
 print(f"Total raw requests (with weekend boost): {len(df):,}")
 
-# ── Apply rainy-weather demand reduction ─────────────────────────────────────
+# -- Apply rainy-weather demand reduction -------------------------------------
 # Drop ~30% of rainy-day requests to simulate lower demand
 rainy_mask  = df["weather"] == "rainy"
 drop_idx    = df[rainy_mask].sample(frac=0.30, random_state=42).index
 df          = df.drop(index=drop_idx).reset_index(drop=True)
 print(f"Total requests after rainy-day reduction: {len(df):,}")
 
-# ── Aggregate to demand count per route/day/hour/weather ─────────────────────
+# -- Aggregate to demand count per route/day/hour/weather ---------------------
 agg = (
     df.groupby(["origin", "destination", "request_date",
                 "day_of_week", "hour", "weather"])
@@ -103,9 +103,9 @@ agg = (
       .reset_index(name="demand_count")
 )
 
-# ── Save ──────────────────────────────────────────────────────────────────────
+# -- Save ----------------------------------------------------------------------
 output_path = "ride_demand_aggregated.csv"
 agg.to_csv(output_path, index=False)
-print(f"\nDataset saved → {output_path}")
+print(f"\nDataset saved -> {output_path}")
 print(f"Rows: {len(agg):,}  |  Columns: {list(agg.columns)}")
 print(agg.head(10).to_string())

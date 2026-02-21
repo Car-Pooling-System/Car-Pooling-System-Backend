@@ -2,7 +2,7 @@
 
 A Python Flask microservice for predicting ride demand across popular carpooling routes.
 
-## 📁 Structure
+## Structure
 
 ```
 ml_service/
@@ -16,7 +16,7 @@ ml_service/
 └── venv/                      # Python virtual environment
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 cd ml_service
@@ -43,9 +43,10 @@ The server starts at **http://localhost:5001**
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### `GET /health`
+
 Returns service health status.
 
 ```json
@@ -60,9 +61,11 @@ Returns service health status.
 ---
 
 ### `POST /predict-demand`
+
 Predicts ride demand for a given route, time, and condition.
 
 **Request Body:**
+
 ```json
 {
   "origin": "Chennai",
@@ -74,6 +77,7 @@ Predicts ride demand for a given route, time, and condition.
 ```
 
 **Response:**
+
 ```json
 {
   "predicted_demand": 12.5,
@@ -87,18 +91,19 @@ Predicts ride demand for a given route, time, and condition.
 ---
 
 ### `GET /demand-heatmap`
+
 Returns demand predictions for all popular routes over the next 7 days at peak hours.
 
 **Supported routes:** Chennai–Bangalore, Chennai–Coimbatore, Bangalore–Chennai, Bangalore–Hyderabad, Mumbai–Pune, Delhi–Jaipur
 
 ---
 
-## 🤖 Model Details
+## Model Details
 
-| Parameter       | Value                  |
-|----------------|------------------------|
-| Algorithm       | Random Forest Regressor |
-| Trees           | 100                    |
-| Max Depth       | 10                     |
-| Features        | origin, destination, day_of_week, hour, weather |
-| Target          | demand_count           |
+| Parameter | Value                                           |
+| --------- | ----------------------------------------------- |
+| Algorithm | Random Forest Regressor                         |
+| Trees     | 100                                             |
+| Max Depth | 10                                              |
+| Features  | origin, destination, day_of_week, hour, weather |
+| Target    | demand_count                                    |

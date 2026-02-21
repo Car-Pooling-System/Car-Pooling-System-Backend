@@ -1,7 +1,7 @@
-import express from 'express'
-import Driver from '../../models/driver.model.js'
+import express from "express";
+import Driver from "../../models/driver.model.js";
 
-const router = express.Router()
+const router = express.Router();
 
 // GET driver profile
 router.get("/:userId", async (req, res) => {
@@ -35,9 +35,9 @@ router.put("/:userId", async (req, res) => {
 
     // Check vehicle fields
     if (updates.vehicle) {
-      Object.keys(updates.vehicle).forEach(key => {
+      Object.keys(updates.vehicle).forEach((key) => {
         if (driver.vehicle && driver.vehicle[key] !== updates.vehicle[key]) {
-          modifiedFields.push('vehicle');
+          modifiedFields.push("vehicle");
         }
       });
       driver.vehicle = { ...driver.vehicle, ...updates.vehicle };
@@ -45,9 +45,12 @@ router.put("/:userId", async (req, res) => {
 
     // Check documents
     if (updates.documents) {
-      Object.keys(updates.documents).forEach(key => {
-        if (driver.documents && driver.documents[key] !== updates.documents[key]) {
-          modifiedFields.push('documents');
+      Object.keys(updates.documents).forEach((key) => {
+        if (
+          driver.documents &&
+          driver.documents[key] !== updates.documents[key]
+        ) {
+          modifiedFields.push("documents");
         }
       });
       driver.documents = { ...driver.documents, ...updates.documents };
@@ -55,24 +58,24 @@ router.put("/:userId", async (req, res) => {
 
     // Check profile image
     if (updates.profileImage && driver.profileImage !== updates.profileImage) {
-      modifiedFields.push('profileImage');
+      modifiedFields.push("profileImage");
       driver.profileImage = updates.profileImage;
     }
 
     // Check phone number
     if (updates.phoneNumber && driver.phoneNumber !== updates.phoneNumber) {
-      modifiedFields.push('phoneNumber');
+      modifiedFields.push("phoneNumber");
       driver.phoneNumber = updates.phoneNumber;
     }
 
     // Reset verification flags only for modified fields
-    if (modifiedFields.includes('vehicle')) {
+    if (modifiedFields.includes("vehicle")) {
       driver.verification.vehicleVerified = false;
     }
-    if (modifiedFields.includes('documents')) {
+    if (modifiedFields.includes("documents")) {
       driver.verification.drivingLicenseVerified = false;
     }
-    if (modifiedFields.includes('phoneNumber')) {
+    if (modifiedFields.includes("phoneNumber")) {
       driver.verification.phoneVerified = false;
     }
 

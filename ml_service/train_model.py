@@ -14,7 +14,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 import joblib
 import os
 
-# ── Load Dataset ──────────────────────────────────────────────────────────────
+# -- Load Dataset --------------------------------------------------------------
 CSV_PATH = os.path.join(os.path.dirname(__file__), "ride_demand_aggregated.csv")
 
 if not os.path.exists(CSV_PATH):
@@ -26,7 +26,7 @@ if not os.path.exists(CSV_PATH):
 df = pd.read_csv(CSV_PATH)
 print(f"Loaded dataset: {len(df):,} rows")
 
-# ── Feature Engineering ───────────────────────────────────────────────────────
+# -- Feature Engineering -------------------------------------------------------
 CATEGORICAL = ["origin", "destination", "day_of_week", "weather"]
 
 encoders: dict[str, LabelEncoder] = {}
@@ -41,13 +41,13 @@ TARGET   = "demand_count"
 X = df[FEATURES].values
 y = df[TARGET].values
 
-# ── Train / Test Split ────────────────────────────────────────────────────────
+# -- Train / Test Split --------------------------------------------------------
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# ── Train Model ───────────────────────────────────────────────────────────────
-print("\nTraining RandomForestRegressor (100 trees, max_depth=10) …")
+# -- Train Model ---------------------------------------------------------------
+print("\nTraining RandomForestRegressor (100 trees, max_depth=10) ...")
 model = RandomForestRegressor(
     n_estimators=100,
     max_depth=10,
@@ -56,7 +56,7 @@ model = RandomForestRegressor(
 )
 model.fit(X_train, y_train)
 
-# ── Evaluate ──────────────────────────────────────────────────────────────────
+# -- Evaluate ------------------------------------------------------------------
 y_pred = model.predict(X_test)
 mae    = mean_absolute_error(y_test, y_pred)
 r2     = r2_score(y_test, y_pred)
@@ -72,12 +72,12 @@ print("\nFeature Importances:")
 for feat, imp in sorted(zip(FEATURES, importances), key=lambda x: -x[1]):
     print(f"  {feat:<20} {imp:.4f}")
 
-# ── Save Artifacts ────────────────────────────────────────────────────────────
+# -- Save Artifacts ------------------------------------------------------------
 MODEL_PATH    = os.path.join(os.path.dirname(__file__), "demand_model.pkl")
 ENCODERS_PATH = os.path.join(os.path.dirname(__file__), "encoders.pkl")
 
 joblib.dump(model,    MODEL_PATH)
 joblib.dump(encoders, ENCODERS_PATH)
 
-print(f"\nModel   saved → {MODEL_PATH}")
-print(f"Encoders saved → {ENCODERS_PATH}")
+print(f"\nModel   saved -> {MODEL_PATH}")
+print(f"Encoders saved -> {ENCODERS_PATH}")
