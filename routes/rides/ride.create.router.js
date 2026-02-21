@@ -8,8 +8,16 @@ router.post("/", async (req, res) => {
   try {
     console.log("CREATE RIDE BODY:", JSON.stringify(req.body, null, 2));
 
-    const { driver, route, schedule, pricing, preferences, seats, metrics } =
-      req.body;
+        const {
+            driver,
+            vehicle,
+            route,
+            schedule,
+            pricing,
+            preferences,
+            seats,
+            metrics,
+        } = req.body;
 
     const validation = {
       hasStart: !!route?.start,
@@ -52,11 +60,22 @@ router.post("/", async (req, res) => {
         exStart.getTime() + (ride.metrics.durationMinutes || 60) * 60000,
       );
 
-      // Overlap Condition: (StartA < EndB) and (EndA > StartB)
-      if (newStart < exEnd && newEnd > exStart) {
-        return res.status(409).json({
-          message: `You already have a ride scheduled at ${exStart.toLocaleString()}`,
-          conflictId: ride._id,
+        const ride = await Ride.create({
+            driver,
+            vehicle: vehicle || {},
+            route: {
+                start: route.start,
+                end: route.end,
+                stops: [],
+                encodedPolyline: route.encodedPolyline,
+                gridsCovered: route.gridsCovered,
+            },
+            schedule,
+            pricing,
+            preferences,
+            seats,
+            metrics,
+            status: "scheduled",
         });
       }
     }

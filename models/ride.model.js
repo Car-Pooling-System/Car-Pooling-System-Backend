@@ -13,13 +13,59 @@ const PointSchema = new mongoose.Schema(
 /* ---------- RIDE ---------- */
 
 const RideSchema = new mongoose.Schema(
-  {
-    driver: {
-      userId: { type: String, required: true, index: true },
-      name: String,
-      profileImage: String,
-      rating: Number,
-    },
+    {
+        driver: {
+            userId: { type: String, required: true, index: true },
+            name: String,
+            profileImage: String,
+            rating: Number,
+            isVerified: { type: Boolean, default: false },
+        },
+
+        vehicle: {
+            brand: String,
+            model: String,
+            year: String,
+            color: String,
+            licensePlate: String,
+            image: String,
+        },
+
+        route: {
+            start: {
+                name: String,
+                location: PointSchema,
+                grid: { type: String, index: true },
+            },
+
+            end: {
+                name: String,
+                location: PointSchema,
+                grid: { type: String, index: true },
+            },
+
+            stops: [
+                {
+                    name: String,
+                    location: PointSchema,
+                    grid: String,
+                    pickupAllowed: { type: Boolean, default: true },
+                    etaMinutesFromStart: Number,
+                },
+            ],
+
+            /* 🔥 SMALL & FAST */
+            encodedPolyline: {
+                type: String,
+                required: true,
+            },
+
+            /* 🔥 CORE SEARCH STRUCTURE */
+            gridsCovered: {
+                type: [String],
+                index: true,
+            },
+        },
 
     route: {
       start: {
@@ -57,13 +103,27 @@ const RideSchema = new mongoose.Schema(
       },
     },
 
-    schedule: {
-      departureTime: { type: Date, required: true },
-      recurrence: {
-        type: {
-          type: String,
-          enum: ["one-time", "daily", "weekly", "monthly", "weekends"],
-          default: "one-time",
+        seats: {
+            total: { type: Number, required: true },
+            available: { type: Number, required: true },
+            // Named seat type breakdown chosen by driver
+            seatTypes: [
+                {
+                    type: {
+                        type: String,
+                        enum: [
+                            "front",          // Front passenger seat
+                            "backWindow",     // Back window seat (left/right)
+                            "backMiddle",     // Back middle seat
+                            "backArmrest",    // Back seat with armrest
+                            "thirdRow",       // Third row / van/SUV extra row
+                            "any",            // No preference / any seat
+                        ],
+                    },
+                    label: String,   // display label e.g. "Front Seat"
+                    count: { type: Number, default: 0 },
+                },
+            ],
         },
         daysOfWeek: [Number],
         endDate: Date,

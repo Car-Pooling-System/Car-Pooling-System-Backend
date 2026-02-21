@@ -1,13 +1,90 @@
 import mongoose from "mongoose";
 
 const DriverSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-    },
+    {
+
+        userId: {
+            type: String,
+            required: true,
+            unique: true,
+            index: true,
+        },
+
+        profileImage: {
+            type: String,
+            default: "",
+        },
+
+        phoneNumber: {
+            type: String,
+            default: "",
+        },
+
+        vehicles: [
+            {
+                brand: {
+                    type: String,
+                    trim: true,
+                    required: true,
+                },
+
+                model: {
+                    type: String,
+                    trim: true,
+                    required: true,
+                },
+
+                year: {
+                    type: String,
+                    trim: true,
+                    required: true,
+                },
+
+                color: {
+                    type: String,
+                    trim: true,
+                    required: true,
+                },
+
+                licensePlate: {
+                    type: String,
+                    trim: true,
+                    required: true,
+                },
+
+                totalSeats: {
+                    type: Number,
+                    default: 4,
+                    min: 1,
+                    max: 12,
+                },
+
+                images: [
+                    {
+                        type: String,
+                    },
+                ],
+
+                createdAt: {
+                    type: Date,
+                    default: Date.now,
+                },
+            },
+        ],
+
+
+        documents: {
+            drivingLicense: {
+                type: String,
+            },
+            vehicleRegistration: {
+                type: String,
+            },
+            insurance: {
+                type: String,
+            },
+        },
+
 
     profileImage: {
       type: String,
