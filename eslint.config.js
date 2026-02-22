@@ -2,6 +2,9 @@ import js from "@eslint/js";
 import globals from "globals";
 
 export default [
+    {
+        ignores: ["node_modules/**", "coverage/**", ".github/**", "ml_service/**"],
+    },
     js.configs.recommended,
     {
         languageOptions: {
@@ -18,7 +21,4 @@ export default [
             "no-undef": "error",
         },
     },
-    {
-        ignores: ["node_modules/", "ml_service/"]
-    }
 ];
