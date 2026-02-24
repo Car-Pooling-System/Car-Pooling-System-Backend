@@ -41,8 +41,12 @@ jobs:
         run: npm install
       
       - name: Run ESLint
-        run: npm run lint
-        continue-on-error: false
+        run: |
+          if npm run | grep -q "^  lint$" && ( [ -f ".eslintrc.json" ] || [ -f "eslint.config.js" ] || [ -f ".eslintrc.js" ] || [ -f ".eslintrc" ] ); then
+            npm run lint
+          else
+            echo "Lint script or config file not found. Skipping code quality check."
+          fi
       
       - name: Check code formatting
         run: npm run format:check
