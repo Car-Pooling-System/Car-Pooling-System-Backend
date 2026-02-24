@@ -38,7 +38,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Run ESLint
         run: npm run lint
@@ -67,7 +67,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Run unit tests
         run: npm run test:unit
@@ -115,7 +115,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Wait for MongoDB
         run: sleep 5
@@ -161,7 +161,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Run API tests
         run: npm run test:api
@@ -189,7 +189,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Check for vulnerabilities
         run: npm audit --audit-level=high
