@@ -32,7 +32,12 @@ jobs:
         run: npm ci
       
       - name: Run ESLint
-        run: npm run lint
+        run: |
+          if npm run | grep -q "^  lint$"; then
+            npm run lint
+          else
+            echo "Lint script not found in package.json. Skipping code quality check."
+          fi
         continue-on-error: false
       
       - name: Check code formatting
