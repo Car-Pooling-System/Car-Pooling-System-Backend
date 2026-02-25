@@ -59,6 +59,11 @@ const DriverSchema = new mongoose.Schema(
                     max: 12,
                 },
 
+                hasLuggageSpace: {
+                    type: Boolean,
+                    default: false,
+                },
+
                 images: [
                     {
                         type: String,

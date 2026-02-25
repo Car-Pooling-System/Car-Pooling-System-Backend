@@ -40,6 +40,7 @@ router.get("/:rideId", async (req, res) => {
                 color: v.color,
                 licensePlate: v.licensePlate,
                 image: v.images?.[0] || null,
+                hasLuggageSpace: v.hasLuggageSpace || false,
             };
         }
 
@@ -80,15 +81,6 @@ router.get("/:rideId", async (req, res) => {
         console.error(err);
         res.status(500).json({ message: "Failed to fetch ride" });
     }
-
-    res.json({
-      ride,
-      estimate,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to fetch ride" });
-  }
 });
 
 export default router;

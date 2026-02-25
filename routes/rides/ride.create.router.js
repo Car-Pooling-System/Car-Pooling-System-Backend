@@ -54,28 +54,14 @@ router.post("/", async (req, res) => {
       newStart.getTime() + (metrics.durationMinutes || 60) * 60000,
     );
 
-    for (const ride of existingRides) {
-      const exStart = new Date(ride.schedule.departureTime);
+    for (const existingRide of existingRides) {
+      const exStart = new Date(existingRide.schedule.departureTime);
       const exEnd = new Date(
-        exStart.getTime() + (ride.metrics.durationMinutes || 60) * 60000,
+        exStart.getTime() + (existingRide.metrics?.durationMinutes || 60) * 60000,
       );
-
-        const ride = await Ride.create({
-            driver,
-            vehicle: vehicle || {},
-            route: {
-                start: route.start,
-                end: route.end,
-                stops: [],
-                encodedPolyline: route.encodedPolyline,
-                gridsCovered: route.gridsCovered,
-            },
-            schedule,
-            pricing,
-            preferences,
-            seats,
-            metrics,
-            status: "scheduled",
+      if (newStart < exEnd && newEnd > exStart) {
+        return res.status(409).json({
+          message: "You already have a ride scheduled during this time",
         });
       }
     }
@@ -83,6 +69,7 @@ router.post("/", async (req, res) => {
 
     const ride = await Ride.create({
       driver,
+      vehicle: vehicle || {},
       route: {
         start: route.start,
         end: route.end,
