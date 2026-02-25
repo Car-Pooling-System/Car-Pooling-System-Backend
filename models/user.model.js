@@ -88,6 +88,14 @@ const RiderSchema = new mongoose.Schema(
         type: Boolean,
         default: false,
       },
+      aadharVerified: {
+        type: Boolean,
+        default: false,
+      },
+      aadharNumber: {
+        type: String,
+        default: "",
+      },
     },
 
     trustScore: {

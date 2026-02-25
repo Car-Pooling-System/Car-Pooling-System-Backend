@@ -74,6 +74,16 @@ const DriverSchema = new mongoose.Schema(
                     type: Date,
                     default: Date.now,
                 },
+
+                insuranceDoc: {
+                    type: String,
+                    default: "",
+                },
+
+                insuranceVerified: {
+                    type: Boolean,
+                    default: false,
+                },
             },
         ],
 
@@ -210,6 +220,14 @@ const DriverSchema = new mongoose.Schema(
       vehicleVerified: {
         type: Boolean,
         default: false,
+      },
+      aadharVerified: {
+        type: Boolean,
+        default: false,
+      },
+      aadharNumber: {
+        type: String,
+        default: "",
       },
     },
 
