@@ -19,6 +19,16 @@ const RideSchema = new mongoose.Schema(
             name: String,
             profileImage: String,
             rating: Number,
+            isVerified: { type: Boolean, default: false },
+        },
+
+        vehicle: {
+            brand: String,
+            model: String,
+            year: String,
+            color: String,
+            licensePlate: String,
+            image: String,
         },
 
         route: {
@@ -71,10 +81,26 @@ const RideSchema = new mongoose.Schema(
         },
 
         seats: {
-            total: { type: Number, default: 4 },
-            available: { type: Number, default: 4 },
-            front: { type: Number, default: 1 },
-            back: { type: Number, default: 2 },
+            total: { type: Number, required: true },
+            available: { type: Number, required: true },
+            // Named seat type breakdown chosen by driver
+            seatTypes: [
+                {
+                    type: {
+                        type: String,
+                        enum: [
+                            "front",          // Front passenger seat
+                            "backWindow",     // Back window seat (left/right)
+                            "backMiddle",     // Back middle seat
+                            "backArmrest",    // Back seat with armrest
+                            "thirdRow",       // Third row / van/SUV extra row
+                            "any",            // No preference / any seat
+                        ],
+                    },
+                    label: String,   // display label e.g. "Front Seat"
+                    count: { type: Number, default: 0 },
+                },
+            ],
         },
 
         pricing: {

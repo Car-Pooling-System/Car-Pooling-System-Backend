@@ -98,4 +98,49 @@ router.get("/passenger/:passengerId", async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
+
+/**
+ * GET Payments by Driver
+ * Returns all payments where driverId matches, sorted newest first.
+ * Query params: ?status=success|pending|failed|refunded
+ */
+router.get("/driver/:driverId", async (req, res) => {
+  try {
+    const { driverId } = req.params;
+    const { status } = req.query;
+
+    const filter = { driverId };
+    if (status) filter.status = status;
+
+    const payments = await Payment.find(filter).sort({ createdAt: -1 });
+
+    // Aggregate summary
+    const all = await Payment.find({ driverId });
+    const totalEarnings = all
+      .filter((p) => p.status === "success")
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const currentMonthEarnings = all
+      .filter((p) => p.status === "success" && new Date(p.createdAt) >= startOfMonth)
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    const pendingPayouts = all
+      .filter((p) => p.status === "pending")
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    res.json({
+      payments,
+      summary: {
+        totalEarnings,
+        currentMonthEarnings,
+        pendingPayouts,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
 export default router;
