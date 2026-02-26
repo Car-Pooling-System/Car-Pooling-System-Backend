@@ -40,6 +40,8 @@ router.put("/:userId", async (req, res) => {
       "phoneVerified",
       "drivingLicenseVerified",
       "vehicleVerified",
+      "aadharVerified",
+      "aadharNumber",
     ];
 
     // Validate allowed fields

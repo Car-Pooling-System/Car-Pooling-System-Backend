@@ -15,6 +15,11 @@ const RiderSchema = new mongoose.Schema(
       },
     ],
 
+    phoneNumber: {
+      type: String,
+      default: "",
+    },
+
     rating: {
       average: {
         type: Number,
@@ -87,6 +92,14 @@ const RiderSchema = new mongoose.Schema(
       idVerified: {
         type: Boolean,
         default: false,
+      },
+      aadharVerified: {
+        type: Boolean,
+        default: false,
+      },
+      aadharNumber: {
+        type: String,
+        default: "",
       },
     },
 
