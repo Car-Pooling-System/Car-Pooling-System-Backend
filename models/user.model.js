@@ -15,6 +15,11 @@ const RiderSchema = new mongoose.Schema(
       },
     ],
 
+    phoneNumber: {
+      type: String,
+      default: "",
+    },
+
     rating: {
       average: {
         type: Number,
