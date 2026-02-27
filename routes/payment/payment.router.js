@@ -4,46 +4,20 @@ import Driver from "../../models/driver.model.js";
 
 const router = express.Router();
 
+/*
+Platform Commission %
+Driver pays later monthly
+*/
+
 const PLATFORM_COMMISSION_PERCENT = 10;
 
 
 /*
 ==================================================
 CREATE PAYMENT
+Passenger Pays Full Amount
 ==================================================
 */
-
-/**
- * @swagger
- * /api/payment:
- *   post:
- *     summary: Create Payment
- *     description: Initiates a distance-based payment calculation.
- *     tags:
- *       - Payment
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               rideId:
- *                 type: string
- *               passengerId:
- *                 type: string
- *               driverId:
- *                 type: string
- *               boardingKm:
- *                 type: number
- *               dropKm:
- *                 type: number
- *               paymentMethod:
- *                 type: string
- *     responses:
- *       201:
- *         description: Payment created successfully
- */
 
 router.post("/", async (req,res)=>{
 
@@ -92,7 +66,7 @@ message:"Invalid journey distance"
 
 /*
 Example Ride Pricing
-( later fetch from Ride Model )
+(fetch later from Ride Model)
 */
 
 const rideDistance = 300;
@@ -103,15 +77,33 @@ const costPerKm = rideCost / rideDistance;
 const travelledDistance =
 dropKm - boardingKm;
 
+
+/*
+Passenger sees FULL fare
+*/
+
 const amount =
 travelledDistance * costPerKm;
+
+
+/*
+Platform commission tracked separately
+*/
 
 const commission =
 (amount * PLATFORM_COMMISSION_PERCENT)/100;
 
-const driverEarning =
-amount - commission;
 
+/*
+Driver receives FULL money immediately
+*/
+
+const driverEarning = amount;
+
+
+/*
+CREATE PAYMENT
+*/
 
 const payment =
 await Payment.create({
@@ -153,6 +145,8 @@ payment
 
 catch(err){
 
+console.log(err);
+
 res.status(500).json({
 
 message:"Server error",
@@ -169,26 +163,9 @@ error:err.message
 /*
 ==================================================
 UPDATE PAYMENT STATUS
+Credit Driver + Add Commission Debt
 ==================================================
 */
-
-/**
- * @swagger
- * /api/payment/{paymentId}/status:
- *   put:
- *     summary: Update Payment Status
- *     tags:
- *       - Payment
- *     parameters:
- *       - in: path
- *         name: paymentId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Payment updated
- */
 
 router.put("/:paymentId/status",
 
@@ -229,7 +206,6 @@ message:"Payment not found"
 });
 
 }
-
 
 
 /*
@@ -274,7 +250,6 @@ message:"Driver bank details missing"
 
 }
 
-
 if(
 !driver.bankDetails.accountNumber &&
 !driver.bankDetails.upiId
@@ -290,12 +265,15 @@ message:"Driver payout incomplete"
 
 
 /*
-SAFE EARNINGS FIX
+SAFE EARNINGS STRUCTURE
 */
 
 if(!driver.earnings){
 
-driver.earnings={total:0};
+driver.earnings={
+total:0,
+commissionDue:0
+};
 
 }
 
@@ -305,33 +283,35 @@ driver.earnings.total=0;
 
 }
 
+if(typeof driver.earnings.commissionDue !== "number"){
 
-/*
-MONEY SPLIT
-*/
+driver.earnings.commissionDue=0;
 
-const farePerKm =
-payment.amount /
-payment.travelDistanceKm;
-
-const passengerDistance =
-payment.dropKm -
-payment.boardingKm;
-
-const passengerFare =
-farePerKm *
-passengerDistance;
+}
 
 
 /*
-CREDIT DRIVER
+DRIVER GETS FULL MONEY
 */
 
 driver.earnings.total +=
-Number(passengerFare);
+Number(payment.driverEarning);
+
+
+/*
+PLATFORM COMMISSION ADDED AS MONTHLY DEBT
+*/
+
+driver.earnings.commissionDue +=
+Number(payment.platformCommission);
+
 
 await driver.save();
 
+
+/*
+DOUBLE CREDIT PROTECTION
+*/
 
 payment.isDriverCredited=true;
 
@@ -339,7 +319,7 @@ payment.isDriverCredited=true;
 
 
 /*
-STATUS UPDATE
+UPDATE STATUS
 */
 
 payment.status=status;

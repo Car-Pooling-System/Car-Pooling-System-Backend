@@ -61,12 +61,15 @@ const DriverSchema = new mongoose.Schema(
     /* ================= DOCUMENTS ================= */
 
     documents: {
+
         drivingLicense: String,
+
         vehicleRegistration: String,
+
         insurance: String,
     },
 
-    /* ================= ⭐ NEW BANK DETAILS ================= */
+    /* ================= BANK DETAILS ================= */
 
     bankDetails: {
 
@@ -104,6 +107,7 @@ const DriverSchema = new mongoose.Schema(
     /* ================= RATING ================= */
 
     rating: {
+
         average: {
             type: Number,
             default: 0,
@@ -120,6 +124,7 @@ const DriverSchema = new mongoose.Schema(
     /* ================= RIDES ================= */
 
     rides: {
+
         hosted: {
             type: Number,
             default: 0,
@@ -146,12 +151,69 @@ const DriverSchema = new mongoose.Schema(
         default: 0,
     },
 
+    /* ================= DRIVER MONEY SYSTEM ================= */
+
     earnings: {
+
+        /*
+        Money visible to driver
+        Passenger Fare goes fully here
+        */
+
         total: {
             type: Number,
             default: 0,
         },
+
+        /*
+        Platform commission accumulated
+        Driver pays later monthly
+        */
+
+        pendingCommission: {
+            type: Number,
+            default: 0,
+        },
+
+        /*
+        Commission already paid to platform
+        */
+
+        paidCommission: {
+            type: Number,
+            default: 0,
+        },
     },
+
+    /* ================= MONTHLY COMMISSION HISTORY ================= */
+
+    commissionHistory: [
+
+        {
+
+            month: String,
+
+            year: Number,
+
+            amountPaid: Number,
+
+            paidAt: {
+
+                type: Date,
+
+                default: Date.now,
+
+            },
+
+            paymentMethod: String,
+
+            transactionId: String,
+
+        },
+
+    ],
+
+    /* ================= VERIFICATION ================= */
 
     verification: {
 
@@ -177,16 +239,21 @@ const DriverSchema = new mongoose.Schema(
     },
 
     trustScore: {
+
         type: Number,
+
         default: 0,
     },
 
     isBlocked: {
+
         type: Boolean,
+
         default: false,
     },
 
     lastRideHostedAt: {
+
         type: Date,
     },
 

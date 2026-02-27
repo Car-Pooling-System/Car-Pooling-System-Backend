@@ -4,19 +4,24 @@ import dotenv from "dotenv";
 dotenv.config();
 
 /*
-Connect DB before tests
+CONNECT DB BEFORE TESTS
 */
 
 beforeAll(async () => {
 
- await mongoose.connect(process.env.MONGO_URI);
+ await mongoose.connect(process.env.MONGO_URI, {
+
+   serverSelectionTimeoutMS: 5000
+
+ });
 
  console.log("✅ Test DB Connected");
 
 });
 
+
 /*
-Close DB after tests
+CLOSE DB AFTER TESTS
 */
 
 afterAll(async () => {

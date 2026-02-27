@@ -3,17 +3,20 @@ import Driver from "../../models/driver.model.js";
 
 const router = express.Router();
 
-/**
- ADD or UPDATE Bank Details
+
+/*
+==================================
+ADD / UPDATE BANK DETAILS
+==================================
 */
 
 router.put("/:userId", async (req,res)=>{
 
 try{
 
-const {userId}=req.params;
+const { userId } = req.params;
 
-const {
+const{
 
 accountHolderName,
 accountNumber,
@@ -23,7 +26,30 @@ upiId
 
 }=req.body;
 
-const driver=await Driver.findOne({userId});
+
+/*
+VALIDATION
+*/
+
+if(!accountNumber && !upiId){
+
+return res.status(400).json({
+
+message:
+"Either Account Number or UPI Id required"
+
+});
+
+}
+
+
+/*
+FIND DRIVER
+*/
+
+const driver =
+await Driver.findOne({ userId });
+
 
 if(!driver){
 
@@ -35,28 +61,48 @@ message:"Driver not found"
 
 }
 
+
+/*
+SAVE BANK DETAILS
+*/
+
 driver.bankDetails={
 
-accountHolderName,
-accountNumber,
-ifscCode,
-bankName,
-upiId
+accountHolderName:
+accountHolderName || "",
+
+accountNumber:
+accountNumber || "",
+
+ifscCode:
+ifscCode || "",
+
+bankName:
+bankName || "",
+
+upiId:
+upiId || ""
 
 };
 
 await driver.save();
 
+
 res.json({
 
-message:"Bank details saved successfully",
-bankDetails:driver.bankDetails
+message:
+"Bank details saved successfully",
+
+bankDetails:
+driver.bankDetails
 
 });
 
 }
 
 catch(err){
+
+console.log(err);
 
 res.status(500).json({
 
@@ -70,21 +116,39 @@ error:err.message
 });
 
 
-/**
- GET Bank Details
+
+/*
+==================================
+GET BANK DETAILS
+==================================
 */
 
-router.get("/:userId", async(req,res)=>{
+router.get("/:userId",
+
+async(req,res)=>{
 
 try{
 
-const driver=await Driver.findOne({
+const driver =
+await Driver.findOne({
 
 userId:req.params.userId
 
 }).select("bankDetails");
 
-if(!driver || !driver.bankDetails){
+
+if(!driver){
+
+return res.status(404).json({
+
+message:"Driver not found"
+
+});
+
+}
+
+
+if(!driver.bankDetails){
 
 return res.status(404).json({
 
@@ -94,11 +158,19 @@ message:"Bank details not found"
 
 }
 
-res.json(driver.bankDetails);
+
+res.json({
+
+bankDetails:
+driver.bankDetails
+
+});
 
 }
 
 catch(err){
+
+console.log(err);
 
 res.status(500).json({
 
@@ -112,19 +184,26 @@ error:err.message
 });
 
 
-/**
- DELETE Bank Details
+
+/*
+==================================
+DELETE BANK DETAILS
+==================================
 */
 
-router.delete("/:userId", async(req,res)=>{
+router.delete("/:userId",
+
+async(req,res)=>{
 
 try{
 
-const driver=await Driver.findOne({
+const driver =
+await Driver.findOne({
 
 userId:req.params.userId
 
 });
+
 
 if(!driver){
 
@@ -136,19 +215,35 @@ message:"Driver not found"
 
 }
 
-driver.bankDetails=undefined;
+
+/*
+RESET BANK DETAILS
+*/
+
+driver.bankDetails={
+
+accountHolderName:"",
+accountNumber:"",
+ifscCode:"",
+bankName:"",
+upiId:""
+
+};
 
 await driver.save();
 
+
 res.json({
 
-message:"Bank details removed"
+message:"Bank details removed successfully"
 
 });
 
 }
 
 catch(err){
+
+console.log(err);
 
 res.status(500).json({
 
@@ -160,5 +255,6 @@ error:err.message
 }
 
 });
+
 
 export default router;
