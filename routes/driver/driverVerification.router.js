@@ -1,5 +1,6 @@
 import express from "express";
 import Driver from "../../models/driver.model.js";
+import Rider from "../../models/user.model.js";
 
 const router = express.Router();
 
@@ -65,6 +66,19 @@ router.put("/:userId", async (req, res) => {
     };
 
     await driver.save();
+
+    // Sync with Rider if Aadhar fields are present
+    if ("aadharVerified" in updates || "aadharNumber" in updates) {
+      const riderUpdates = {};
+      if ("aadharVerified" in updates) riderUpdates["verification.aadharVerified"] = updates.aadharVerified;
+      if ("aadharNumber" in updates) riderUpdates["verification.aadharNumber"] = updates.aadharNumber;
+
+      await Rider.findOneAndUpdate(
+        { userId },
+        { $set: riderUpdates },
+        { new: true }
+      );
+    }
 
     res.json({
       message: "Verification updated successfully",
