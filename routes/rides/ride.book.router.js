@@ -5,6 +5,7 @@ import { decodePolyline } from "../../utils/polyline.utils.js";
 import { latLngToGrid } from "../../utils/geo.utils.js";
 import { findClosestPointIndex } from "../../utils/route.utils.js";
 import { calculateSegmentDistance } from "../../utils/fare.utils.js";
+import { sendBookingConfirmation } from "../../utils/mailer.utils.js";
 
 const router = express.Router();
 
@@ -75,6 +76,30 @@ router.post("/:rideId/book", async (req, res) => {
     );
 
     console.log("Rider booking updated for:", user.userId, !!riderUpdate);
+
+    // Send booking confirmation email (non-blocking)
+    if (user.email) {
+      const vehicleParts = [
+        ride.vehicle?.brand,
+        ride.vehicle?.model,
+        ride.vehicle?.year ? `(${ride.vehicle.year})` : null,
+        ride.vehicle?.color,
+      ].filter(Boolean);
+
+      sendBookingConfirmation({
+        to:            user.email,
+        riderName:     user.name || "Rider",
+        rideId:        ride._id.toString(),
+        from:          ride.route?.start?.name || "Start",
+        to_place:      ride.route?.end?.name   || "End",
+        pickupName:    user.pickupName || ride.route?.start?.name || "Pickup",
+        dropName:      user.dropName   || ride.route?.end?.name   || "Drop-off",
+        departureTime: ride.schedule?.departureTime,
+        driverName:    ride.driver?.name || "Driver",
+        farePaid,
+        vehicleInfo:   vehicleParts.join(" ") || undefined,
+      });
+    }
 
     res.json({ message: "Ride booked", farePaid });
   } catch (err) {

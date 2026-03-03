@@ -118,8 +118,18 @@ router.get("/", async (req, res) => {
       console.log("ESTIMATED FARE:", fare, "(PricePerKm:", pricePerKm, ")");
 
       results.push({
-        id: ride._id,
+        _id: ride._id,
         driver: ride.driver,
+        vehicle: {
+          brand: ride.vehicle?.brand,
+          model: ride.vehicle?.model,
+          color: ride.vehicle?.color,
+          year: ride.vehicle?.year,
+        },
+        route: {
+          start: { name: ride.route?.start?.name },
+          end:   { name: ride.route?.end?.name },
+        },
         schedule: ride.schedule,
         seatsAvailable: ride.seats.available,
         preferences: ride.preferences,
