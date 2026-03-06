@@ -50,23 +50,31 @@ router.get("/nearby", async (req, res) => {
     const radius = Math.min(Number(radiusKm), 500); // cap at 500 km
     const gridCells = gridsWithinRadius(Number(lat), Number(lng), radius);
 
-    // Rides whose route passes through ANY cell in the radius
+    const now = new Date();
+    console.log(`[Nearby] lat=${lat}, lng=${lng}, radius=${radius}km, grids=${gridCells.length}`);
+
+    // Rides whose route passes through ANY cell in the radius (future only)
     let candidates = await Ride.find({
       "route.gridsCovered": { $in: gridCells },
       status: "scheduled",
       "seats.available": { $gt: 0 },
+      "schedule.departureTime": { $gte: now },
     })
-      .sort({ "schedule.departureTime": -1 })
-      .limit(Number(limit));
+      .sort({ "schedule.departureTime": 1 })
+      .limit(Number(limit) * 3); // fetch extra since we'll filter by start-point distance
 
-    // Fallback: sparse data / dev environment — return latest rides
+    console.log(`[Nearby] Grid query found ${candidates.length} candidates (future only)`);
+
+    // Fallback: sparse data / dev environment — return upcoming rides
     if (candidates.length === 0) {
       candidates = await Ride.find({
         status: "scheduled",
         "seats.available": { $gt: 0 },
+        "schedule.departureTime": { $gte: now },
       })
-        .sort({ "schedule.departureTime": -1 })
-        .limit(Number(limit));
+        .sort({ "schedule.departureTime": 1 })
+        .limit(Number(limit) * 3);
+      console.log(`[Nearby] Fallback found ${candidates.length} candidates`);
     }
 
     const results = [];
@@ -103,6 +111,27 @@ router.get("/nearby", async (req, res) => {
         estimatedFare = Math.round(segKm * pricePerKm);
       }
 
+      // distance from user to ride's START POINT only
+      const startLat = ride.route?.start?.location?.coordinates[1];
+      const startLng = ride.route?.start?.location?.coordinates[0];
+      let userToStartKm = null;
+      if (startLat && startLng) {
+        const dlat2 = ((startLat - Number(lat)) * Math.PI) / 180;
+        const dlng2 = ((startLng - Number(lng)) * Math.PI) / 180;
+        const a2 = Math.sin(dlat2 / 2) ** 2 +
+          Math.cos((Number(lat) * Math.PI) / 180) * Math.cos((startLat * Math.PI) / 180) * Math.sin(dlng2 / 2) ** 2;
+        userToStartKm = 6371 * 2 * Math.atan2(Math.sqrt(a2), Math.sqrt(1 - a2));
+      }
+
+      // Only include rides whose START POINT is within the requested radius
+      if (userToStartKm !== null && userToStartKm > radius) {
+        console.log(`  [skip] "${ride.route?.start?.name}" start is ${userToStartKm.toFixed(1)}km away (> ${radius}km)`);
+        continue;
+      }
+
+      // Enforce limit after distance filtering
+      if (results.length >= Number(limit)) break;
+
       results.push({
         _id: ride._id,
         driver: ride.driver,
@@ -113,18 +142,32 @@ router.get("/nearby", async (req, res) => {
           year:  ride.vehicle?.year,
         },
         route: {
-          start: { name: ride.route?.start?.name },
-          end:   { name: ride.route?.end?.name },
+          start: {
+            name: ride.route?.start?.name,
+            lat: startLat ?? null,
+            lng: startLng ?? null,
+          },
+          end: {
+            name: ride.route?.end?.name,
+            lat: ride.route?.end?.location?.coordinates[1] ?? null,
+            lng: ride.route?.end?.location?.coordinates[0] ?? null,
+          },
         },
         schedule:       ride.schedule,
         seatsAvailable: ride.seats.available,
         preferences:    ride.preferences,
         estimate: {
           distanceKm: Number((ride.metrics?.totalDistanceKm || 0).toFixed(1)),
+          userToStartKm: userToStartKm !== null ? Number(userToStartKm.toFixed(1)) : null,
           fare:       estimatedFare,
         },
       });
     }
+
+    console.log(`[Nearby] Returning ${results.length} rides:`);
+    results.forEach((r, i) => {
+      console.log(`  #${i + 1} ${r.route?.start?.name} -> ${r.route?.end?.name} | userToStart=${r.estimate?.userToStartKm}km | departs=${r.schedule?.departureTime}`);
+    });
 
     res.json(results);
   } catch (err) {

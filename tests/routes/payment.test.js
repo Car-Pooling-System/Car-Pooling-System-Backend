@@ -120,4 +120,40 @@ describe('Payment Routes', () => {
             expect(res.body).toEqual([]);
         });
     });
+
+    describe('GET /driver/:driverId', () => {
+        it('returns list of payments and earnings summary for driver', async () => {
+            const payments = [
+                mockPayment({ status: 'success', amount: 100, createdAt: new Date() }),
+                mockPayment({ status: 'success', amount: 200, createdAt: new Date() }),
+                mockPayment({ status: 'pending', amount: 50, createdAt: new Date() }),
+            ];
+            // Mocking the chainable sort
+            const mockFind = {
+                sort: jest.fn().mockResolvedValue(payments)
+            };
+            Payment.find.mockReturnValueOnce(mockFind); // For payments list
+            Payment.find.mockResolvedValueOnce(payments); // For summary calculations
+
+            const res = await request(app).get('/driver/driver1');
+
+            expect(res.status).toBe(200);
+            expect(res.body.payments).toHaveLength(3);
+            expect(res.body.summary.totalEarnings).toBe(300);
+            expect(res.body.summary.pendingPayouts).toBe(50);
+        });
+
+        it('returns summary with zeros when no payments found', async () => {
+            const mockFind = {
+                sort: jest.fn().mockResolvedValue([])
+            };
+            Payment.find.mockReturnValueOnce(mockFind);
+            Payment.find.mockResolvedValueOnce([]);
+
+            const res = await request(app).get('/driver/unknown');
+
+            expect(res.status).toBe(200);
+            expect(res.body.summary.totalEarnings).toBe(0);
+        });
+    });
 });
