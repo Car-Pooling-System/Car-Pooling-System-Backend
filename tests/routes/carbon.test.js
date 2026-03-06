@@ -51,15 +51,33 @@ describe('Carbon Emission Routes', () => {
             expect(res.body.error).toBe('DB Error');
         });
 
-        it('returns 300 when Emission.findOne returns null', async () => {
+        it('returns 404 when Emission.findOne returns null', async () => {
             Emission.findOne.mockResolvedValue(null);
 
             const res = await request(app)
                 .get('/')
                 .send({ type: 'SUV', distances: [1000] });
 
-            expect(res.status).toBe(300);
-            expect(res.body.message).toBe('Server error');
+            expect(res.status).toBe(404);
+            expect(res.body.message).toBe('Emission factor for type not found');
+        });
+
+        it('returns 400 when distances array is empty', async () => {
+            Emission.findOne.mockResolvedValue({ emissionFactor: 120 });
+
+            const res = await request(app)
+                .get('/')
+                .send({ type: 'SUV', distances: [] });
+
+            expect(res.status).toBe(400);
+        });
+
+        it('returns 400 when distances field is missing', async () => {
+            const res = await request(app)
+                .get('/')
+                .send({ type: 'SUV' });
+
+            expect(res.status).toBe(400);
         });
     });
 });

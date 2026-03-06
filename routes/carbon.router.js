@@ -7,10 +7,16 @@ router.get('/', async (req, res) => {
     try {
         const { type, distances } = req.body;
 
+        if (!type || !distances || !Array.isArray(distances) || distances.length === 0) {
+            return res.status(400).json({ message: "Invalid input: type and non-empty distances array required" });
+        }
+
         const Car = await Emission.findOne({ type: type });
+        if (!Car) {
+            return res.status(404).json({ message: "Emission factor for type not found" });
+        }
         const emissionFactor = Car.emissionFactor;
 
-        const maxD = Math.max(...distances);
         const summationD = distances.reduce((acc, current) => acc + current, 0);
 
         var emissionArr = [];

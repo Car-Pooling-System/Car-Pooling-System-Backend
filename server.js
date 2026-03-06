@@ -47,6 +47,10 @@ app.use("/get-emission", emissionRouter);
 
 app.use("/api/payment", paymentRouter);
 
-app.listen(PORT, () => {
-  console.log(`server is running on http://0.0.0.0:${PORT}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`server is running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+export default app;
