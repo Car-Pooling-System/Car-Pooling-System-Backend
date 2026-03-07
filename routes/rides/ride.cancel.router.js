@@ -25,10 +25,10 @@ router.post("/:rideId/cancel", async (req, res) => {
     if (ride.driver.userId === userId) {
       ride.status = "cancelled";
 
-      // Loop through all confirmed passengers to cancel them
+      // Loop through all confirmed/requested passengers to cancel them
       const cancelledPassengers = [];
       for (const passenger of ride.passengers) {
-        if (passenger.status === "confirmed") {
+        if (passenger.status === "confirmed" || passenger.status === "requested") {
           passenger.status = "cancelled";
           cancelledPassengers.push(passenger.userId);
         }
@@ -50,7 +50,7 @@ router.post("/:rideId/cancel", async (req, res) => {
 
     // 2. If not driver, proceed as PASSENGER cancellation
     const passengerIndex = ride.passengers.findIndex(
-      (p) => p.userId === userId && p.status === "confirmed",
+      (p) => p.userId === userId && (p.status === "confirmed" || p.status === "requested"),
     );
 
     if (passengerIndex === -1) {
@@ -59,11 +59,15 @@ router.post("/:rideId/cancel", async (req, res) => {
         .json({ message: "Booking not found or already cancelled" });
     }
 
+    const wasConfirmed = ride.passengers[passengerIndex].status === "confirmed";
+
     // Mark passenger as cancelled
     ride.passengers[passengerIndex].status = "cancelled";
 
-    // Increase available seats
-    ride.seats.available += 1;
+    // Only increase available seats if the booking was confirmed (seats were decremented)
+    if (wasConfirmed) {
+      ride.seats.available += 1;
+    }
 
     await ride.save();
 

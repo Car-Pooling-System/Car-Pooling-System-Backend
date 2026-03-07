@@ -48,8 +48,8 @@ const RiderSchema = new mongoose.Schema(
 
         status: {
           type: String,
-          enum: ["confirmed", "cancelled"],
-          default: "confirmed",
+          enum: ["requested", "confirmed", "cancelled"],
+          default: "requested",
         },
 
         bookedAt: {
