@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
   try {
     console.log("RAW QUERY PARAMS:", req.query);
 
-    const { pickupLat, pickupLng, dropLat, dropLng } = req.query;
+    const { pickupLat, pickupLng, dropLat, dropLng, date, minSeats } = req.query;
 
     if (!pickupLat || !pickupLng || !dropLat || !dropLng) {
       console.log("Missing query params");
@@ -31,13 +31,30 @@ router.get("/", async (req, res) => {
 
     console.log("COMPUTED GRIDS:", pickupGrid, dropGrid);
 
-    /* ---------- DB QUERY ---------- */
-    console.log("QUERYING DB...");
-    const candidates = await Ride.find({
+    /* ---------- BUILD DATE FILTER ---------- */
+    const dbFilter = {
       "route.gridsCovered": { $all: [pickupGrid, dropGrid] },
       status: "scheduled",
-      "seats.available": { $gt: 0 },
-    });
+      "seats.available": { $gte: minSeats ? Number(minSeats) : 1 },
+    };
+
+    if (date) {
+      // Filter rides whose departure falls on the same calendar day
+      const selectedDate = new Date(date);
+      const dayStart = new Date(selectedDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(selectedDate);
+      dayEnd.setHours(23, 59, 59, 999);
+      dbFilter["schedule.departureTime"] = { $gte: dayStart, $lte: dayEnd };
+      console.log("DATE FILTER:", dayStart.toISOString(), "to", dayEnd.toISOString());
+    } else {
+      // Default: only future rides
+      dbFilter["schedule.departureTime"] = { $gte: new Date() };
+    }
+
+    /* ---------- DB QUERY ---------- */
+    console.log("QUERYING DB...");
+    const candidates = await Ride.find(dbFilter);
 
     console.log("RIDES FOUND:", candidates.length);
 
@@ -132,6 +149,8 @@ router.get("/", async (req, res) => {
         },
         schedule: ride.schedule,
         seatsAvailable: ride.seats.available,
+        seatsTotal: ride.seats.total,
+        seatTypes: ride.seats.seatTypes || [],
         preferences: ride.preferences,
         estimate: {
           distanceKm: segmentKm,

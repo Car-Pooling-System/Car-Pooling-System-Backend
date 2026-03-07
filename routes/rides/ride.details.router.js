@@ -29,6 +29,11 @@ router.get("/:rideId", async (req, res) => {
             rideObj.driver.reviewsCount = driverRecord.rating.reviewsCount;
         }
         rideObj.driver.ridesHosted = driverRecord?.rides?.hosted || 0;
+        rideObj.driver.ridesCompleted = driverRecord?.rides?.completed || 0;
+        rideObj.driver.trustScore = driverRecord?.trustScore || 0;
+        rideObj.driver.phoneNumber = driverRecord?.phoneNumber || "";
+        rideObj.driver.hoursDriven = driverRecord?.hoursDriven || 0;
+        rideObj.driver.distanceDrivenKm = driverRecord?.distanceDrivenKm || 0;
 
         // Fallback: if ride has no vehicle data, use first vehicle from driver record
         if (!rideObj.vehicle?.brand && driverRecord?.vehicles?.length > 0) {

@@ -125,10 +125,24 @@ const RideSchema = new mongoose.Schema(
                 dropGrid: String,
 
                 farePaid: Number,
+                seatType: {
+                    type: String,
+                    enum: ["front", "backWindow", "backMiddle", "backArmrest", "thirdRow", "any"],
+                    default: "any",
+                },
+                seatLabel: { type: String, default: "Any Seat" },
+
+                // Guest / multi-passenger booking fields
+                isGuest: { type: Boolean, default: false },
+                age: Number,
+                sex: { type: String, enum: ["male", "female", "other", ""], default: "" },
+                email: String,
+                bookedBy: String, // userId of the person who booked on behalf
+
                 status: {
                     type: String,
-                    enum: ["confirmed", "cancelled"],
-                    default: "confirmed",
+                    enum: ["requested", "confirmed", "cancelled"],
+                    default: "requested",
                 },
             },
         ],
