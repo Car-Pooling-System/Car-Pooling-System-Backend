@@ -129,11 +129,22 @@ export default function registerChatSocket(io) {
       try {
         const conversationId = normalizeConversationId(rawConversationId);
         if (!conversationId) return;
-        await Message.updateMany(
+
+        const result = await Message.updateMany(
           { conversationId, readBy: { $ne: userId } },
           { $addToSet: { readBy: userId } },
         );
-        socket.to(conversationId).emit("messages-read", { conversationId, userId });
+
+        // Get participant info for the reader so clients can show avatars
+        const convo = await Conversation.findById(conversationId, { participants: 1 }).lean();
+        const reader = convo?.participants?.find((p) => p.userId === userId);
+
+        socket.to(conversationId).emit("messages-read", {
+          conversationId,
+          userId,
+          name: reader?.name || "",
+          profileImage: reader?.profileImage || "",
+        });
       } catch (err) {
         console.error("[Chat] mark-read error:", err);
       }
