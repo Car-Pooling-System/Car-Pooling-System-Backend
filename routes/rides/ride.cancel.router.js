@@ -43,7 +43,7 @@ router.post("/:rideId/cancel", async (req, res) => {
       );
 
       console.log("Ride cancelled by driver:", userId, "Ride ID:", ride._id);
-
+      
       return res.json({
         message: "Ride cancelled successfully. Passengers notified.",
       });

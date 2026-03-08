@@ -35,7 +35,33 @@ router.get("/conversations", async (req, res) => {
           conversationId: c._id,
           readBy: { $ne: userId },
         });
-        return { ...c, unreadCount: unread };
+
+        // Attach ride info for group chats
+        let rideInfo = null;
+        if (c.type === "group" && c.rideId) {
+          const ride = await Ride.findById(c.rideId, {
+            "route.start.name": 1,
+            "route.end.name": 1,
+            "schedule.departureTime": 1,
+            status: 1,
+            "seats.total": 1,
+            "seats.available": 1,
+            "driver.name": 1,
+          }).lean();
+          if (ride) {
+            rideInfo = {
+              from: ride.route?.start?.name || "",
+              to: ride.route?.end?.name || "",
+              departureTime: ride.schedule?.departureTime || null,
+              status: ride.status || "scheduled",
+              totalSeats: ride.seats?.total || 0,
+              availableSeats: ride.seats?.available || 0,
+              driverName: ride.driver?.name || "",
+            };
+          }
+        }
+
+        return { ...c, unreadCount: unread, rideInfo };
       }),
     );
 
