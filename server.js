@@ -49,7 +49,9 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://car-pooling-system-web-frontend.vercel.app"
+      "https://car-pooling-system-web-frontend.vercel.app",
+      "https://car-pooling-system-web-frontend-cb18x36d1.vercel.app",
+      /^https:\/\/car-pooling-system-web-frontend.*\.vercel\.app$/
     ],
     credentials: true,
   }),
