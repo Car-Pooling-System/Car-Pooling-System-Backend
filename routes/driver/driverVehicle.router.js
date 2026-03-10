@@ -47,6 +47,8 @@ router.post("/:userId", async (req, res) => {
     }
 
     driver.vehicle = vehicleData;
+    // Auto-verify vehicle since it's added on driver side
+    driver.verification.vehicleVerified = true;
     await driver.save();
 
     res.status(201).json({
@@ -73,6 +75,8 @@ router.put("/:userId", async (req, res) => {
     }
 
     Object.assign(driver.vehicle, updates);
+    // Auto-verify vehicle since updates are made on driver side
+    driver.verification.vehicleVerified = true;
     await driver.save();
 
     res.json({
