@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import path from "path";
 import connectDB from "./config/db.js";
 
 import healthRouter from "./routes/health.router.js";
@@ -13,6 +14,7 @@ import emissionRouter from "./routes/carbon.router.js";
 
 import paymentRouter from "./routes/payment/payment.router.js";
 import mlRouter from "./routes/ml.router.js";
+import fileUploadRouter from "./routes/fileUpload.router.js";
 
 dotenv.config();
 connectDB();
@@ -20,13 +22,15 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
   }),
 );
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/", (req, res) => {
   res.send(
@@ -38,6 +42,7 @@ app.use("/health", healthRouter);
 app.use("/api/ml", mlRouter); // Moved up for priority
 console.log("ML Proxy Router Registered at /api/ml");
 app.use("/api/phone-verification", phoneVerificationRouter);
+app.use("/api/files", fileUploadRouter);
 
 app.use("/api", driverRouter);
 app.use("/api/rides", rideRouter);
