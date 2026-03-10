@@ -103,6 +103,19 @@ const RiderSchema = new mongoose.Schema(
       },
     },
 
+    emergencyContacts: [
+      {
+        name:  { type: String, default: "" },
+        email: { type: String, default: "" },
+        phone: { type: String, default: "" },
+      },
+    ],
+
+    sosSecretCode: {
+      type: String,
+      default: "",
+    },
+
     trustScore: {
       type: Number,
       default: 0,

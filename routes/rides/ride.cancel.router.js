@@ -50,26 +50,37 @@ router.post("/:rideId/cancel", async (req, res) => {
     }
 
     // 2. If not driver, proceed as PASSENGER cancellation
-    const passengerIndex = ride.passengers.findIndex(
-      (p) => p.userId === userId && (p.status === "confirmed" || p.status === "requested"),
+    // Find ALL entries belonging to this user: their own seat + any guests they booked
+    const myEntries = ride.passengers.filter(
+      (p) => (p.userId === userId || p.bookedBy === userId) &&
+             (p.status === "confirmed" || p.status === "requested"),
     );
 
-    if (passengerIndex === -1) {
+    if (myEntries.length === 0) {
       return res
         .status(404)
         .json({ message: "Booking not found or already cancelled" });
     }
 
-    const wasConfirmed = ride.passengers[passengerIndex].status === "confirmed";
+    let seatsRestored = 0;
+    let totalRefund = 0;
 
-    // Mark passenger as cancelled
-    ride.passengers[passengerIndex].status = "cancelled";
+    for (const entry of myEntries) {
+      const idx = ride.passengers.findIndex(
+        (p) => p.userId === entry.userId && p.status === entry.status,
+      );
+      if (idx === -1) continue;
 
-    // Only increase available seats if the booking was confirmed (seats were decremented)
-    if (wasConfirmed) {
-      ride.seats.available += 1;
+      const wasConfirmed = ride.passengers[idx].status === "confirmed";
+      ride.passengers[idx].status = "cancelled";
+
+      if (wasConfirmed) {
+        seatsRestored += 1;
+      }
+      totalRefund += ride.passengers[idx].farePaid || 0;
     }
 
+    ride.seats.available += seatsRestored;
     await ride.save();
 
     // Update rider's booking status
@@ -83,11 +94,12 @@ router.post("/:rideId/cancel", async (req, res) => {
       },
     );
 
-    console.log("Booking cancelled for user:", userId, "on ride:", ride._id);
+    console.log("Booking cancelled for user:", userId, "entries:", myEntries.length, "on ride:", ride._id);
 
     res.json({
-      message: "Booking cancelled successfully",
-      refundAmount: ride.passengers[passengerIndex].farePaid,
+      message: `Booking cancelled successfully (${myEntries.length} seat${myEntries.length > 1 ? "s" : ""})`,
+      refundAmount: totalRefund,
+      seatsCancelled: myEntries.length,
     });
   } catch (err) {
     console.error("CANCEL BOOKING ERROR:", err);
