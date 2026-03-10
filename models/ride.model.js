@@ -19,6 +19,21 @@ const RideSchema = new mongoose.Schema(
             name: String,
             profileImage: String,
             rating: Number,
+            isVerified: { type: Boolean, default: false },
+            liveLocation: {
+                lat: Number,
+                lng: Number,
+                updatedAt: Date,
+            },
+        },
+
+        vehicle: {
+            brand: String,
+            model: String,
+            year: String,
+            color: String,
+            licensePlate: String,
+            image: String,
         },
 
         route: {
@@ -71,10 +86,26 @@ const RideSchema = new mongoose.Schema(
         },
 
         seats: {
-            total: { type: Number, default: 4 },
-            available: { type: Number, default: 4 },
-            front: { type: Number, default: 1 },
-            back: { type: Number, default: 2 },
+            total: { type: Number, required: true },
+            available: { type: Number, required: true },
+            // Named seat type breakdown chosen by driver
+            seatTypes: [
+                {
+                    type: {
+                        type: String,
+                        enum: [
+                            "front",          // Front passenger seat
+                            "backWindow",     // Back window seat (left/right)
+                            "backMiddle",     // Back middle seat
+                            "backArmrest",    // Back seat with armrest
+                            "thirdRow",       // Third row / van/SUV extra row
+                            "any",            // No preference / any seat
+                        ],
+                    },
+                    label: String,   // display label e.g. "Front Seat"
+                    count: { type: Number, default: 0 },
+                },
+            ],
         },
 
         pricing: {
@@ -99,10 +130,42 @@ const RideSchema = new mongoose.Schema(
                 dropGrid: String,
 
                 farePaid: Number,
+                seatType: {
+                    type: String,
+                    enum: ["front", "backWindow", "backMiddle", "backArmrest", "thirdRow", "any"],
+                    default: "any",
+                },
+                seatLabel: { type: String, default: "Any Seat" },
+
+                // Guest / multi-passenger booking fields
+                isGuest: { type: Boolean, default: false },
+                age: Number,
+                sex: { type: String, enum: ["male", "female", "other", ""], default: "" },
+                email: String,
+                bookedBy: String, // userId of the person who booked on behalf
+
                 status: {
                     type: String,
-                    enum: ["confirmed", "cancelled"],
-                    default: "confirmed",
+                    enum: ["requested", "confirmed", "cancelled"],
+                    default: "requested",
+                },
+
+                // Live ride fields
+                boardingOtp: { type: String, default: "" },
+                isReady: { type: Boolean, default: false },
+                readyAt: Date,
+                isBoarded: { type: Boolean, default: false },
+                boardedAt: Date,
+                isDropped: { type: Boolean, default: false },
+                droppedAt: Date,
+                droppedLocation: {
+                    lat: Number,
+                    lng: Number,
+                },
+                liveLocation: {
+                    lat: Number,
+                    lng: Number,
+                    updatedAt: Date,
                 },
             },
         ],
@@ -112,6 +175,8 @@ const RideSchema = new mongoose.Schema(
             enum: ["scheduled", "ongoing", "completed", "cancelled"],
             default: "scheduled",
         },
+
+        startedAt: Date,
 
         metrics: {
             totalDistanceKm: Number,

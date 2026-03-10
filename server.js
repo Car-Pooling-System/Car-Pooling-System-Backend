@@ -18,15 +18,26 @@ import riderRouter from "./routes/rider/index.js";
 import emissionRouter from "./routes/carbon.router.js";
 import paymentRouter from "./routes/payment/payment.router.js";
 
+/* Razorpay Routes */
+import razorpayRouter from "./routes/payment/razorpay.router.js";
+import razorpayVerifyRouter from "./routes/payment/razorpayVerify.router.js";
+import commissionRouter from "./routes/payment/commission.router.js";
+
 dotenv.config();
 
 const app = express();
+
+/*
+====================
+MIDDLEWARE
+====================
+*/
 
 app.use(express.json());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "*",
     credentials: true,
   })
 );
@@ -53,17 +64,21 @@ app.use("/get-emission", emissionRouter);
 
 app.use("/api/payment", paymentRouter);
 
+/* Razorpay Payment Gateway */
+app.use("/api/razorpay", razorpayRouter);
+
+/* Razorpay Payment Verification */
+app.use("/api/razorpay", razorpayVerifyRouter);
+
+app.use("/api/payment", commissionRouter);
+
 /*
 ====================
 SWAGGER DOCS
 ====================
 */
 
-app.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec)
-);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 /*
 ====================
@@ -72,15 +87,13 @@ SERVER START
 */
 
 if (process.env.NODE_ENV !== "test") {
-
   connectDB();
 
   const PORT = process.env.PORT || 3000;
 
   app.listen(PORT, () => {
-    console.log(`server is running on http://0.0.0.0:${PORT}`);
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
   });
-
 }
 
 export default app;

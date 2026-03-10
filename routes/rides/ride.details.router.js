@@ -1,5 +1,6 @@
 import express from "express";
 import Ride from "../../models/ride.model.js";
+import Driver from "../../models/driver.model.js";
 import { decodePolyline } from "../../utils/polyline.utils.js";
 import { findClosestPointIndex } from "../../utils/route.utils.js";
 import { calculateSegmentDistance } from "../../utils/fare.utils.js";
@@ -10,6 +11,43 @@ router.get("/:rideId", async (req, res) => {
     try {
         const ride = await Ride.findById(req.params.rideId);
         if (!ride) return res.status(404).json({ message: "Ride not found" });
+
+        // Enrich with driver verification
+        const driverRecord = await Driver.findOne({ userId: ride.driver.userId }).lean();
+        const v = driverRecord?.verification || {};
+        const isVerified = !!(v.emailVerified && v.phoneVerified && v.drivingLicenseVerified && v.vehicleVerified);
+        const rideObj = ride.toObject();
+        rideObj.driver.isVerified = isVerified;
+        rideObj.driver.verificationDetails = {
+            email: !!v.emailVerified,
+            phone: !!v.phoneVerified,
+            license: !!v.drivingLicenseVerified,
+            vehicle: !!v.vehicleVerified,
+        };
+        if (driverRecord?.rating?.average > 0) {
+            rideObj.driver.rating = driverRecord.rating.average;
+            rideObj.driver.reviewsCount = driverRecord.rating.reviewsCount;
+        }
+        rideObj.driver.ridesHosted = driverRecord?.rides?.hosted || 0;
+        rideObj.driver.ridesCompleted = driverRecord?.rides?.completed || 0;
+        rideObj.driver.trustScore = driverRecord?.trustScore || 0;
+        rideObj.driver.phoneNumber = driverRecord?.phoneNumber || "";
+        rideObj.driver.hoursDriven = driverRecord?.hoursDriven || 0;
+        rideObj.driver.distanceDrivenKm = driverRecord?.distanceDrivenKm || 0;
+
+        // Fallback: if ride has no vehicle data, use first vehicle from driver record
+        if (!rideObj.vehicle?.brand && driverRecord?.vehicles?.length > 0) {
+            const v = driverRecord.vehicles[0];
+            rideObj.vehicle = {
+                brand: v.brand,
+                model: v.model,
+                year: v.year,
+                color: v.color,
+                licensePlate: v.licensePlate,
+                image: v.images?.[0] || null,
+                hasLuggageSpace: v.hasLuggageSpace || false,
+            };
+        }
 
         let estimate = null;
 
@@ -41,7 +79,7 @@ router.get("/:rideId", async (req, res) => {
         }
 
         res.json({
-            ride,
+            ride: rideObj,
             estimate,
         });
     } catch (err) {

@@ -13,157 +13,104 @@ CREATE PAYMENT
 ==================================================
 */
 
-/**
- * @swagger
- * /api/payment:
- *   post:
- *     summary: Create Payment
- *     description: Initiates a distance-based payment calculation.
- *     tags:
- *       - Payment
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               rideId:
- *                 type: string
- *               passengerId:
- *                 type: string
- *               driverId:
- *                 type: string
- *               boardingKm:
- *                 type: number
- *               dropKm:
- *                 type: number
- *               paymentMethod:
- *                 type: string
- *     responses:
- *       201:
- *         description: Payment created successfully
- */
+router.post("/", async (req, res) => {
 
-router.post("/", async (req,res)=>{
+  try {
 
-try{
+    const {
+      rideId,
+      passengerId,
+      driverId,
+      boardingKm,
+      dropKm,
+      paymentMethod
+    } = req.body;
 
-const {
+    if (
+      !rideId ||
+      !passengerId ||
+      !driverId ||
+      boardingKm === undefined ||
+      dropKm === undefined ||
+      !paymentMethod
+    ) {
+      return res.status(400).json({
+        message: "Missing required fields"
+      });
+    }
 
-rideId,
-passengerId,
-driverId,
-boardingKm,
-dropKm,
-paymentMethod
+    if (dropKm <= boardingKm) {
+      return res.status(400).json({
+        message: "Invalid journey distance"
+      });
+    }
 
-} = req.body;
+    /*
+    Example Ride Pricing
+    */
 
+    const rideDistance = 300;
+    const rideCost = 600;
 
-if(
-!rideId ||
-!passengerId ||
-!driverId ||
-boardingKm === undefined ||
-dropKm === undefined ||
-!paymentMethod
-){
+    const costPerKm = rideCost / rideDistance;
 
-return res.status(400).json({
+    const travelledDistance =
+      dropKm - boardingKm;
 
-message:"Missing required fields"
+    const amount =
+      travelledDistance * costPerKm;
 
-});
+    const commission =
+      (amount * PLATFORM_COMMISSION_PERCENT) / 100;
 
-}
+    const driverEarning =
+      amount - commission;
 
+    const payment =
+      await Payment.create({
 
-if(dropKm <= boardingKm){
+        rideId,
+        passengerId,
+        driverId,
 
-return res.status(400).json({
+        boardingKm,
+        dropKm,
 
-message:"Invalid journey distance"
+        travelDistanceKm:
+          travelledDistance,
 
-});
+        amount,
 
-}
+        platformCommission:
+          commission,
 
+        driverEarning,
 
-/*
-Example Ride Pricing
-( later fetch from Ride Model )
-*/
+        paymentMethod,
 
-const rideDistance = 300;
-const rideCost = 600;
+        status: "pending",
 
-const costPerKm = rideCost / rideDistance;
+        isDriverCredited: false
 
-const travelledDistance =
-dropKm - boardingKm;
+      });
 
-const amount =
-travelledDistance * costPerKm;
+    res.status(201).json({
+      message: "Payment initiated",
+      payment
+    });
 
-const commission =
-(amount * PLATFORM_COMMISSION_PERCENT)/100;
+  }
 
-const driverEarning =
-amount - commission;
+  catch (err) {
 
+    res.status(500).json({
+      message: "Server error",
+      error: err.message
+    });
 
-const payment =
-await Payment.create({
-
-rideId,
-passengerId,
-driverId,
-
-boardingKm,
-dropKm,
-
-travelDistanceKm:
-travelledDistance,
-
-amount,
-
-platformCommission:
-commission,
-
-driverEarning,
-
-paymentMethod,
-
-status:"pending",
-
-isDriverCredited:false
+  }
 
 });
-
-
-res.status(201).json({
-
-message:"Payment initiated",
-payment
-
-});
-
-}
-
-catch(err){
-
-res.status(500).json({
-
-message:"Server error",
-error:err.message
-
-});
-
-}
-
-});
-
 
 
 /*
@@ -172,214 +119,92 @@ UPDATE PAYMENT STATUS
 ==================================================
 */
 
-/**
- * @swagger
- * /api/payment/{paymentId}/status:
- *   put:
- *     summary: Update Payment Status
- *     tags:
- *       - Payment
- *     parameters:
- *       - in: path
- *         name: paymentId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Payment updated
- */
+router.put("/:paymentId/status", async (req, res) => {
 
-router.put("/:paymentId/status",
+  try {
 
-async(req,res)=>{
+    const { paymentId } = req.params;
 
-try{
+    const { status, transactionId } = req.body;
 
-const {paymentId}=req.params;
+    if (!status) {
+      return res.status(400).json({
+        message: "Status required"
+      });
+    }
 
-const{
+    const payment =
+      await Payment.findById(paymentId);
 
-status,
-transactionId
-
-}=req.body;
+    if (!payment) {
+      return res.status(404).json({
+        message: "Payment not found"
+      });
+    }
 
 
-if(!status){
+    /*
+    CREDIT DRIVER IF PAYMENT SUCCESS
+    */
 
-return res.status(400).json({
+    if (
+      status === "success" &&
+      payment.isDriverCredited === false
+    ) {
 
-message:"Status required"
+      const driver =
+        await Driver.findOne({
+          userId: payment.driverId
+        });
 
-});
+      if (!driver) {
+        return res.status(404).json({
+          message: "Driver not found"
+        });
+      }
 
-}
+      if (!driver.earnings) {
+        driver.earnings = { total: 0 };
+      }
 
+      if (typeof driver.earnings.total !== "number") {
+        driver.earnings.total = 0;
+      }
 
-const payment =
-await Payment.findById(paymentId);
+      driver.earnings.total +=
+        Number(payment.driverEarning);
 
-if(!payment){
+      await driver.save();
 
-return res.status(404).json({
+      payment.isDriverCredited = true;
 
-message:"Payment not found"
+    }
 
-});
+    payment.status = status;
 
-}
+    if (transactionId) {
+      payment.transactionId = transactionId;
+    }
 
+    await payment.save();
 
+    res.json({
+      message: "Payment Updated Successfully",
+      payment
+    });
 
-/*
-SUCCESS PAYMENT
-*/
+  }
 
-if(
-status==="success" &&
-payment.isDriverCredited===false
-){
+  catch (err) {
 
-const driver =
-await Driver.findOne({
+    res.status(500).json({
+      message: "Server error",
+      error: err.message
+    });
 
-userId:payment.driverId
-
-});
-
-
-if(!driver){
-
-return res.status(404).json({
-
-message:"Driver not found"
-
-});
-
-}
-
-
-/*
-BANK VALIDATION
-*/
-
-if(!driver.bankDetails){
-
-return res.status(400).json({
-
-message:"Driver bank details missing"
+  }
 
 });
-
-}
-
-
-if(
-!driver.bankDetails.accountNumber &&
-!driver.bankDetails.upiId
-){
-
-return res.status(400).json({
-
-message:"Driver payout incomplete"
-
-});
-
-}
-
-
-/*
-SAFE EARNINGS FIX
-*/
-
-if(!driver.earnings){
-
-driver.earnings={total:0};
-
-}
-
-if(typeof driver.earnings.total !== "number"){
-
-driver.earnings.total=0;
-
-}
-
-
-/*
-MONEY SPLIT
-*/
-
-const farePerKm =
-payment.amount /
-payment.travelDistanceKm;
-
-const passengerDistance =
-payment.dropKm -
-payment.boardingKm;
-
-const passengerFare =
-farePerKm *
-passengerDistance;
-
-
-/*
-CREDIT DRIVER
-*/
-
-driver.earnings.total +=
-Number(passengerFare);
-
-await driver.save();
-
-
-payment.isDriverCredited=true;
-
-}
-
-
-/*
-STATUS UPDATE
-*/
-
-payment.status=status;
-
-if(transactionId){
-
-payment.transactionId=
-transactionId;
-
-}
-
-await payment.save();
-
-
-res.json({
-
-message:
-"Payment Updated Successfully",
-
-payment
-
-});
-
-}
-
-catch(err){
-
-console.log(err);
-
-res.status(500).json({
-
-message:"Server error",
-error:err.message
-
-});
-
-}
-
-});
-
 
 
 /*
@@ -388,86 +213,143 @@ GET PAYMENT BY ID
 ==================================================
 */
 
-router.get("/:paymentId",
+router.get("/:paymentId", async (req, res) => {
 
-async(req,res)=>{
+  try {
 
-try{
+    const payment =
+      await Payment.findById(
+        req.params.paymentId
+      );
 
-const payment=
-await Payment.findById(
-req.params.paymentId
-);
+    if (!payment) {
+      return res.status(404).json({
+        message: "Payment not found"
+      });
+    }
 
-if(!payment){
+    res.json(payment);
 
-return res.status(404).json({
+  }
 
-message:"Payment not found"
+  catch (err) {
 
-});
+    res.status(500).json({
+      message: "Server error",
+      error: err.message
+    });
 
-}
-
-res.json(payment);
-
-}
-
-catch(err){
-
-res.status(500).json({
-
-message:"Server error",
-error:err.message
+  }
 
 });
-
-}
-
-});
-
 
 
 /*
 ==================================================
-PASSENGER HISTORY
+PASSENGER PAYMENT HISTORY
 ==================================================
 */
 
-router.get(
-"/passenger/:passengerId",
+router.get("/passenger/:passengerId", async (req, res) => {
 
-async(req,res)=>{
+  try {
 
-try{
+    const payments =
+      await Payment.find({
+        passengerId:
+          req.params.passengerId
+      }).sort({
+        createdAt: -1
+      });
 
-const payments=
-await Payment.find({
+    res.json(payments);
 
-passengerId:
-req.params.passengerId
+  }
 
-}).sort({
+  catch (err) {
 
-createdAt:-1
+    res.status(500).json({
+      message: "Server error",
+      error: err.message
+    });
 
-});
-
-res.json(payments);
-
-}
-
-catch(err){
-
-res.status(500).json({
-
-message:"Server error",
-error:err.message
+  }
 
 });
 
-}
+
+/*
+==================================================
+DRIVER PAYMENT HISTORY
+==================================================
+*/
+
+router.get("/driver/:driverId", async (req, res) => {
+
+  try {
+
+    const { driverId } = req.params;
+    const { status } = req.query;
+
+    const filter = { driverId };
+
+    if (status) filter.status = status;
+
+    const payments =
+      await Payment.find(filter)
+        .sort({ createdAt: -1 });
+
+    const all =
+      await Payment.find({ driverId });
+
+    const totalEarnings =
+      all
+        .filter(p => p.status === "success")
+        .reduce((sum, p) => sum + p.amount, 0);
+
+    const now = new Date();
+    const startOfMonth =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        1
+      );
+
+    const currentMonthEarnings =
+      all
+        .filter(
+          p =>
+            p.status === "success" &&
+            new Date(p.createdAt) >= startOfMonth
+        )
+        .reduce((sum, p) => sum + p.amount, 0);
+
+    const pendingPayouts =
+      all
+        .filter(p => p.status === "pending")
+        .reduce((sum, p) => sum + p.amount, 0);
+
+    res.json({
+      payments,
+      summary: {
+        totalEarnings,
+        currentMonthEarnings,
+        pendingPayouts
+      }
+    });
+
+  }
+
+  catch (err) {
+
+    res.status(500).json({
+      message: "Server error",
+      error: err.message
+    });
+
+  }
 
 });
+
 
 export default router;

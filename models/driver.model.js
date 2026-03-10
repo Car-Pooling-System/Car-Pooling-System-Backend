@@ -2,197 +2,269 @@ import mongoose from "mongoose";
 
 const DriverSchema = new mongoose.Schema(
 {
-    userId: {
+  userId: {
+    type: String,
+    required: true,
+    unique: true,
+    index: true,
+  },
+
+  profileImage: {
+    type: String,
+    default: "",
+  },
+
+  phoneNumber: {
+    type: String,
+    default: "",
+  },
+
+  /* ================= VEHICLE ================= */
+
+  vehicle: {
+    type: {
+      type: String,
+    },
+    brand: {
+      type: String,
+      trim: true,
+    },
+    model: {
+      type: String,
+      trim: true,
+    },
+    year: {
+      type: Number,
+    },
+    color: {
+      type: String,
+      trim: true,
+    },
+    licensePlate: {
+      type: String,
+      trim: true,
+    },
+    images: [
+      {
         type: String,
+      },
+    ],
+  },
+
+  /* ================= MULTIPLE VEHICLES SUPPORT ================= */
+
+  vehicles: [
+    {
+      brand: {
+        type: String,
+        trim: true,
         required: true,
-        unique: true,
-        index: true,
-    },
+      },
 
-    profileImage: {
+      model: {
         type: String,
-        default: "",
-    },
+        trim: true,
+        required: true,
+      },
 
-    phoneNumber: {
+      year: {
         type: String,
-        default: "",
-    },
+        trim: true,
+        required: true,
+      },
 
-    /* ================= VEHICLE ================= */
+      color: {
+        type: String,
+        trim: true,
+        required: true,
+      },
 
-    vehicle: {
+      licensePlate: {
+        type: String,
+        trim: true,
+        required: true,
+      },
 
-        type: {
-            type: String,
-        },
-
-        brand: {
-            type: String,
-            trim: true,
-        },
-
-        model: {
-            type: String,
-            trim: true,
-        },
-
-        year: {
-            type: Number,
-        },
-
-        color: {
-            type: String,
-            trim: true,
-        },
-
-        licensePlate: {
-            type: String,
-            trim: true,
-        },
-
-        images: [
-            {
-                type: String,
-            },
-        ],
-    },
-
-    /* ================= DOCUMENTS ================= */
-
-    documents: {
-        drivingLicense: String,
-        vehicleRegistration: String,
-        insurance: String,
-    },
-
-    /* ================= ⭐ NEW BANK DETAILS ================= */
-
-    bankDetails: {
-
-        accountHolderName: {
-            type: String,
-            trim: true,
-            default: "",
-        },
-
-        accountNumber: {
-            type: String,
-            default: "",
-        },
-
-        ifscCode: {
-            type: String,
-            trim: true,
-            uppercase: true,
-            default: "",
-        },
-
-        bankName: {
-            type: String,
-            trim: true,
-            default: "",
-        },
-
-        upiId: {
-            type: String,
-            lowercase: true,
-            default: "",
-        },
-    },
-
-    /* ================= RATING ================= */
-
-    rating: {
-        average: {
-            type: Number,
-            default: 0,
-            min: 0,
-            max: 5,
-        },
-
-        reviewsCount: {
-            type: Number,
-            default: 0,
-        },
-    },
-
-    /* ================= RIDES ================= */
-
-    rides: {
-        hosted: {
-            type: Number,
-            default: 0,
-        },
-
-        completed: {
-            type: Number,
-            default: 0,
-        },
-
-        cancelled: {
-            type: Number,
-            default: 0,
-        },
-    },
-
-    hoursDriven: {
+      totalSeats: {
         type: Number,
-        default: 0,
-    },
+        default: 4,
+        min: 1,
+        max: 12,
+      },
 
-    distanceDrivenKm: {
-        type: Number,
-        default: 0,
-    },
-
-    earnings: {
-        total: {
-            type: Number,
-            default: 0,
-        },
-    },
-
-    verification: {
-
-        emailVerified: {
-            type: Boolean,
-            default: false,
-        },
-
-        phoneVerified: {
-            type: Boolean,
-            default: false,
-        },
-
-        drivingLicenseVerified: {
-            type: Boolean,
-            default: false,
-        },
-
-        vehicleVerified: {
-            type: Boolean,
-            default: false,
-        },
-    },
-
-    trustScore: {
-        type: Number,
-        default: 0,
-    },
-
-    isBlocked: {
+      hasLuggageSpace: {
         type: Boolean,
         default: false,
+      },
+
+      images: [
+        {
+          type: String,
+        },
+      ],
+
+      insuranceDoc: {
+        type: String,
+        default: "",
+      },
+
+      insuranceVerified: {
+        type: Boolean,
+        default: false,
+      },
+
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
+
+  /* ================= DOCUMENTS ================= */
+
+  documents: {
+    drivingLicense: String,
+    vehicleRegistration: String,
+    insurance: String,
+  },
+
+  /* ================= BANK DETAILS ================= */
+
+  bankDetails: {
+    accountHolderName: {
+      type: String,
+      trim: true,
+      default: "",
     },
 
-    lastRideHostedAt: {
-        type: Date,
+    accountNumber: {
+      type: String,
+      default: "",
     },
+
+    ifscCode: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      default: "",
+    },
+
+    bankName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    upiId: {
+      type: String,
+      lowercase: true,
+      default: "",
+    },
+  },
+
+  /* ================= RATING ================= */
+
+  rating: {
+    average: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+
+    reviewsCount: {
+      type: Number,
+      default: 0,
+    },
+  },
+
+  /* ================= RIDES ================= */
+
+  rides: {
+    hosted: {
+      type: Number,
+      default: 0,
+    },
+
+    completed: {
+      type: Number,
+      default: 0,
+    },
+
+    cancelled: {
+      type: Number,
+      default: 0,
+    },
+  },
+
+  hoursDriven: {
+    type: Number,
+    default: 0,
+  },
+
+  distanceDrivenKm: {
+    type: Number,
+    default: 0,
+  },
+
+  earnings: {
+    total: {
+      type: Number,
+      default: 0,
+    },
+  },
+
+  /* ================= VERIFICATION ================= */
+
+  verification: {
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    phoneVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    drivingLicenseVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    vehicleVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    aadharVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    aadharNumber: {
+      type: String,
+      default: "",
+    },
+  },
+
+  trustScore: {
+    type: Number,
+    default: 0,
+  },
+
+  isBlocked: {
+    type: Boolean,
+    default: false,
+  },
+
+  lastRideHostedAt: {
+    type: Date,
+  },
 
 },
 {
-    timestamps: true,
+  timestamps: true,
 }
 );
 

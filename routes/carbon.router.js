@@ -1,23 +1,29 @@
-import express from 'express';
-import Emission from '../models/carbonEmission.model.js';
+import express from "express";
+import Emission from "../models/carbonEmission.model.js";
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-    try{
+    try {
         const { type, distances } = req.body;
 
+        if (!type || !distances || !Array.isArray(distances) || distances.length === 0) {
+            return res.status(400).json({ message: "Invalid input: type and non-empty distances array required" });
+        }
+
         const Car = await Emission.findOne({ type: type });
+        if (!Car) {
+            return res.status(404).json({ message: "Emission factor for type not found" });
+        }
         const emissionFactor = Car.emissionFactor;
 
-        const maxD = Math.max(...distances);
         const summationD = distances.reduce((acc, current) => acc + current, 0);
 
         var emissionArr = [];
         var realEmission = [];
         var totalEmission = 0;
-        for (let i = 0; i < distances.length; i++){
-            var emission = (emissionFactor * distances[i]) / 1000;
+        for (let i = 0; i < distances.length; i++) {
+            var emission = (emissionFactor * distances[i]) / 1000000;
             emission = Number(emission.toFixed(4));
             emissionArr.push(emission);
             totalEmission += emission;
@@ -30,18 +36,18 @@ router.get('/', async (req, res) => {
         emissionCaused = Number(emissionCaused.toFixed(4));
         var savedEmission = totalEmission - emissionCaused;
         savedEmission = Number(savedEmission.toFixed(4));
-        
-        res.status(200).json({ 
-            message: "Emission per passenger if separate, Total Emission if seperate, Total Emission caused, Emission Saved, Real per capita emission in kilograms", 
+
+        res.status(200).json({
+            message: "Emission per passenger if separate, Total Emission if seperate, Total Emission caused, Emission Saved, Real per capita emission in kilograms",
             body: {
-                emissionArr, 
-                totalEmission, 
-                emissionCaused, 
-                savedEmission, 
+                emissionArr,
+                totalEmission,
+                emissionCaused,
+                savedEmission,
                 realEmission
             }
         });
-    } catch (err){
+    } catch (err) {
         res.status(300).json({ message: "Server error", error: err.message });
     }
 });
