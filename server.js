@@ -1,7 +1,8 @@
 import express from "express";
+import { createServer } from "http";
+import { Server as SocketIO } from "socket.io";
 import dotenv from "dotenv";
 import cors from "cors";
-import path from "path";
 import connectDB from "./config/db.js";
 
 import healthRouter from "./routes/health.router.js";
@@ -14,7 +15,8 @@ import emissionRouter from "./routes/carbon.router.js";
 
 import paymentRouter from "./routes/payment/payment.router.js";
 import mlRouter from "./routes/ml.router.js";
-import fileUploadRouter from "./routes/fileUpload.router.js";
+import chatRouter from "./routes/chat.router.js";
+import registerChatSocket from "./socket/chat.socket.js";
 
 dotenv.config();
 connectDB();
@@ -52,10 +54,31 @@ app.use("/get-emission", emissionRouter);
 
 app.use("/api/payment", paymentRouter);
 
+app.use("/api/chat", chatRouter);
+
 if (process.env.NODE_ENV !== "test") {
-  app.listen(PORT, () => {
-    console.log(`server is running on http://0.0.0.0:${PORT}`);
+  const httpServer = createServer(app);
+  const io = new SocketIO(httpServer, {
+    cors: { origin: "*", methods: ["GET", "POST"] },
   });
+  registerChatSocket(io);
+
+  const startServer = (port) => {
+    httpServer
+      .listen(port, () => {
+        console.log(`server is running on http://0.0.0.0:${port}`);
+      })
+      .on("error", (e) => {
+        if (e.code === "EADDRINUSE") {
+          console.warn(`Port ${port} is already in use. Trying port ${port + 1}...`);
+          startServer(port + 1);
+        } else {
+          console.error("Server error:", e);
+        }
+      });
+  };
+
+  startServer(PORT);
 }
 
 export default app;
