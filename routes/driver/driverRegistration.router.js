@@ -26,7 +26,7 @@ router.post("/:userId", async (req, res) => {
       documents: undefined,
 
       verification: {
-        emailVerified: false,
+        emailVerified: true,  // Auto-verified on driver side
         phoneVerified: false,
         drivingLicenseVerified: false,
         vehicleVerified: false,

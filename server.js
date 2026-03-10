@@ -32,7 +32,6 @@ app.use(
     credentials: true,
   }),
 );
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/", (req, res) => {
   res.send(
@@ -44,7 +43,6 @@ app.use("/health", healthRouter);
 app.use("/api/ml", mlRouter); // Moved up for priority
 console.log("ML Proxy Router Registered at /api/ml");
 app.use("/api/phone-verification", phoneVerificationRouter);
-app.use("/api/files", fileUploadRouter);
 
 app.use("/api", driverRouter);
 app.use("/api/rides", rideRouter);
