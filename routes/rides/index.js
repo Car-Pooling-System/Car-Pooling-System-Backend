@@ -8,6 +8,7 @@ import cancelRide from "./ride.cancel.router.js";
 import removePassenger from "./ride.remove-passenger.router.js";
 import driverActions from "./ride.driver.router.js";
 import rideDetails from "./ride.details.router.js";
+import liveRide from "./ride.live.router.js";
 
 const router = express.Router();
 
@@ -19,5 +20,6 @@ router.use("/", cancelRide);
 router.use("/", removePassenger);
 router.use("/", driverActions);
 router.use("/", rideDetails);
+router.use("/", liveRide);
 
 export default router;

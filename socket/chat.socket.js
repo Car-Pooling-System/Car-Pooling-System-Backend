@@ -150,6 +150,119 @@ export default function registerChatSocket(io) {
       }
     });
 
+    // ── LIVE RIDE: Join ride room ──────────────────
+    socket.on("join-ride", (rideId) => {
+      if (!rideId) return;
+      const room = `ride:${rideId}`;
+      socket.join(room);
+      console.log(`[LiveRide] ${userId} joined room ${room}`);
+    });
+
+    // ── LIVE RIDE: Leave ride room ─────────────────
+    socket.on("leave-ride", (rideId) => {
+      if (!rideId) return;
+      const room = `ride:${rideId}`;
+      socket.leave(room);
+      console.log(`[LiveRide] ${userId} left room ${room}`);
+    });
+
+    // ── LIVE RIDE: Location update broadcast ────────
+    socket.on("location-update", ({ rideId, lat, lng, role, name, profileImage }) => {
+      if (!rideId) return;
+      const room = `ride:${rideId}`;
+      socket.to(room).emit("location-updated", {
+        userId,
+        lat,
+        lng,
+        role, // "driver" or "rider"
+        name,
+        profileImage,
+        updatedAt: new Date(),
+      });
+    });
+
+    // ── LIVE RIDE: Rider ready notification ─────────
+    socket.on("rider-ready", ({ rideId, riderName, riderImage }) => {
+      if (!rideId) return;
+      const room = `ride:${rideId}`;
+      io.to(room).emit("rider-ready-notification", {
+        userId,
+        riderName,
+        riderImage,
+        rideId,
+      });
+      console.log(`[LiveRide] Rider ${userId} (${riderName}) is ready for pickup on ride ${rideId}`);
+    });
+
+    // ── LIVE RIDE: OTP verified broadcast ───────────
+    socket.on("otp-verified", ({ rideId, passengerUserId, passengerName }) => {
+      if (!rideId) return;
+      const room = `ride:${rideId}`;
+      io.to(room).emit("rider-boarded", {
+        passengerUserId,
+        passengerName,
+        rideId,
+        verifiedAt: new Date(),
+      });
+      console.log(`[LiveRide] Rider ${passengerUserId} boarded ride ${rideId}`);
+    });
+
+    // ── LIVE RIDE: Ride started broadcast ───────────
+    socket.on("ride-started", ({ rideId }) => {
+      if (!rideId) return;
+      const room = `ride:${rideId}`;
+      io.to(room).emit("ride-started-notification", { rideId });
+      console.log(`[LiveRide] Ride ${rideId} started — broadcast sent`);
+    });
+
+    // ── LIVE RIDE: Ride completed broadcast ─────────
+    socket.on("ride-completed", ({ rideId }) => {
+      if (!rideId) return;
+      const room = `ride:${rideId}`;
+      io.to(room).emit("ride-completed-notification", { rideId });
+      console.log(`[LiveRide] Ride ${rideId} completed — broadcast sent`);
+    });
+
+    // ── LIVE RIDE: Washroom break request ─────────
+    socket.on("washroom-break", ({ rideId, riderName }) => {
+      if (!rideId) return;
+      const room = `ride:${rideId}`;
+      io.to(room).emit("washroom-break-notification", {
+        userId,
+        riderName,
+        rideId,
+        requestedAt: new Date(),
+      });
+      console.log(`[LiveRide] Washroom break requested by ${riderName} on ride ${rideId}`);
+    });
+
+    // ── LIVE RIDE: Passenger dropped off ──────────
+    socket.on("passenger-dropped", ({ rideId, passengerUserId, passengerName, allDropped }) => {
+      if (!rideId) return;
+      const room = `ride:${rideId}`;
+      io.to(room).emit("passenger-dropped-notification", {
+        passengerUserId,
+        passengerName,
+        rideId,
+        allDropped,
+        droppedAt: new Date(),
+      });
+      console.log(`[LiveRide] ${passengerName} dropped off ride ${rideId}. All dropped: ${allDropped}`);
+    });
+
+    // ── LIVE RIDE: SOS alert ──────────────────────
+    socket.on("sos-alert", ({ rideId, riderName }) => {
+      if (!rideId) return;
+      const room = `ride:${rideId}`;
+      io.to(room).emit("sos-alert-notification", {
+        userId,
+        riderName,
+        rideId,
+        triggeredAt: new Date(),
+      });
+      console.log(`[LiveRide] 🚨 SOS triggered by ${riderName} on ride ${rideId}`);
+    });
+
     // ── Disconnect ────────────────────────────────────
     socket.on("disconnect", () => {
       const sockets = onlineUsers.get(userId);

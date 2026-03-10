@@ -26,16 +26,6 @@ router.post("/:rideId/book", async (req, res) => {
     if (ride.seats.available < totalSeatsNeeded)
       return res.status(400).json({ message: `Not enough seats. Need ${totalSeatsNeeded}, only ${ride.seats.available} available.` });
 
-    // Check if user already booked this ride
-    const alreadyBooked = ride.passengers.some(
-      (p) => p.userId === user.userId && (p.status === "confirmed" || p.status === "requested"),
-    );
-    if (alreadyBooked) {
-      return res
-        .status(400)
-        .json({ message: "You have already requested or booked this ride" });
-    }
-
     // DECODE POLYLINE
     const path = decodePolyline(ride.route.encodedPolyline);
 

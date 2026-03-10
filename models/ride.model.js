@@ -20,6 +20,11 @@ const RideSchema = new mongoose.Schema(
             profileImage: String,
             rating: Number,
             isVerified: { type: Boolean, default: false },
+            liveLocation: {
+                lat: Number,
+                lng: Number,
+                updatedAt: Date,
+            },
         },
 
         vehicle: {
@@ -144,6 +149,24 @@ const RideSchema = new mongoose.Schema(
                     enum: ["requested", "confirmed", "cancelled"],
                     default: "requested",
                 },
+
+                // Live ride fields
+                boardingOtp: { type: String, default: "" },
+                isReady: { type: Boolean, default: false },
+                readyAt: Date,
+                isBoarded: { type: Boolean, default: false },
+                boardedAt: Date,
+                isDropped: { type: Boolean, default: false },
+                droppedAt: Date,
+                droppedLocation: {
+                    lat: Number,
+                    lng: Number,
+                },
+                liveLocation: {
+                    lat: Number,
+                    lng: Number,
+                    updatedAt: Date,
+                },
             },
         ],
 
@@ -152,6 +175,8 @@ const RideSchema = new mongoose.Schema(
             enum: ["scheduled", "ongoing", "completed", "cancelled"],
             default: "scheduled",
         },
+
+        startedAt: Date,
 
         metrics: {
             totalDistanceKm: Number,
