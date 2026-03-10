@@ -3,7 +3,6 @@ import { createServer } from "http";
 import { Server as SocketIO } from "socket.io";
 import dotenv from "dotenv";
 import cors from "cors";
-import path from "path";
 import connectDB from "./config/db.js";
 
 import healthRouter from "./routes/health.router.js";
@@ -33,6 +32,7 @@ app.use(
     credentials: true,
   }),
 );
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/", (req, res) => {
   res.send(
@@ -44,6 +44,7 @@ app.use("/health", healthRouter);
 app.use("/api/ml", mlRouter); // Moved up for priority
 console.log("ML Proxy Router Registered at /api/ml");
 app.use("/api/phone-verification", phoneVerificationRouter);
+app.use("/api/files", fileUploadRouter);
 
 app.use("/api", driverRouter);
 app.use("/api/rides", rideRouter);
