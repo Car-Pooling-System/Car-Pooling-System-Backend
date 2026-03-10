@@ -3,6 +3,7 @@ import { createServer } from "http";
 import { Server as SocketIO } from "socket.io";
 import dotenv from "dotenv";
 import cors from "cors";
+import path from "path";
 import connectDB from "./config/db.js";
 
 import healthRouter from "./routes/health.router.js";
@@ -24,7 +25,8 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 app.use(
   cors({
     origin: "http://localhost:5173",
