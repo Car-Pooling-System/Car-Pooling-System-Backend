@@ -3,6 +3,7 @@ import { createServer } from "http";
 import { Server as SocketIO } from "socket.io";
 import dotenv from "dotenv";
 import cors from "cors";
+import path from "path";
 import connectDB from "./config/db.js";
 
 import healthRouter from "./routes/health.router.js";
@@ -19,7 +20,25 @@ import chatRouter from "./routes/chat.router.js";
 import registerChatSocket from "./socket/chat.socket.js";
 
 dotenv.config();
-connectDB();
+
+// --- Environment Variable Validation ---
+const requiredEnv = ["MONGO_URI", "TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN"];
+const missingEnv = requiredEnv.filter((key) => !process.env[key]);
+
+console.log("🔍 Checking Environment Variables...");
+console.log("Detected keys:", Object.keys(process.env).filter(key => !key.includes("npm") && !key.includes("VSCODE") && !key.includes("TERM")).join(", "));
+
+if (missingEnv.length > 0) {
+  console.error("❌ Critical environment variables missing:", missingEnv.join(", "));
+  if (process.env.NODE_ENV === "production") {
+    process.exit(1);
+  }
+} else {
+  console.log("✅ Required environment variables are present.");
+}
+
+// Connect to Database
+await connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +47,10 @@ app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://car-pooling-system-web-frontend.vercel.app"
+    ],
     credentials: true,
   }),
 );
@@ -44,7 +66,6 @@ app.use("/health", healthRouter);
 app.use("/api/ml", mlRouter); // Moved up for priority
 console.log("ML Proxy Router Registered at /api/ml");
 app.use("/api/phone-verification", phoneVerificationRouter);
-app.use("/api/files", fileUploadRouter);
 
 app.use("/api", driverRouter);
 app.use("/api/rides", rideRouter);
@@ -70,8 +91,9 @@ if (process.env.NODE_ENV !== "test") {
       })
       .on("error", (e) => {
         if (e.code === "EADDRINUSE") {
-          console.warn(`Port ${port} is already in use. Trying port ${port + 1}...`);
-          startServer(port + 1);
+          const nextPort = Number(port) + 1;
+          console.warn(`Port ${port} is already in use. Trying port ${nextPort}...`);
+          startServer(nextPort);
         } else {
           console.error("Server error:", e);
         }
