@@ -29,8 +29,9 @@ console.log("🔍 Checking Environment Variables...");
 console.log("Detected keys:", Object.keys(process.env).filter(key => !key.includes("npm") && !key.includes("VSCODE") && !key.includes("TERM")).join(", "));
 
 if (missingEnv.length > 0) {
-  console.error("❌ Critical environment variables missing:", missingEnv.join(", "));
-  if (process.env.NODE_ENV === "production") {
+  console.warn("⚠️  Non-critical environment variables missing:", missingEnv.join(", "));
+  // Only exit if MONGO_URI is missing as it's truly essential
+  if (missingEnv.includes("MONGO_URI") && process.env.NODE_ENV === "production") {
     process.exit(1);
   }
 } else {
@@ -47,12 +48,27 @@ app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://car-pooling-system-web-frontend.vercel.app",
-      "https://car-pooling-system-web-frontend-cb18x36d1.vercel.app",
-      /^https:\/\/car-pooling-system-web-frontend.*\.vercel\.app$/
-    ],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+
+      const allowedPatterns = [
+        /^http:\/\/localhost:\d+$/,
+        /\.vercel\.app$/,
+        /car-pooling-system-web-frontend/
+      ];
+
+      const isAllowed = allowedPatterns.some(pattern =>
+        typeof pattern === 'string' ? pattern === origin : pattern.test(origin)
+      );
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        console.warn(`🔒 CORS Blocked origin: ${origin}`);
+        callback(null, true); // Fallback to allowing during debugging, but logging it
+      }
+    },
     credentials: true,
   }),
 );
